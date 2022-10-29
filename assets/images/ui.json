@@ -1,0 +1,61 @@
+{
+	"textures": [
+		{
+			"image": "ui",
+			"format": "RGBA8888",
+			"size": {
+				"w": 950,
+				"h": 156
+			},
+			"scale": 1,
+			"frames": [
+				{
+					"filename": "gameLogo",
+					"rotated": false,
+					"trimmed": false,
+					"sourceSize": {
+						"w": 880,
+						"h": 152
+					},
+					"spriteSourceSize": {
+						"x": 0,
+						"y": 0,
+						"w": 880,
+						"h": 152
+					},
+					"frame": {
+						"x": 2,
+						"y": 2,
+						"w": 880,
+						"h": 152
+					}
+				},
+				{
+					"filename": "arrowIcon",
+					"rotated": false,
+					"trimmed": false,
+					"sourceSize": {
+						"w": 62,
+						"h": 60
+					},
+					"spriteSourceSize": {
+						"x": 0,
+						"y": 0,
+						"w": 62,
+						"h": 60
+					},
+					"frame": {
+						"x": 886,
+						"y": 2,
+						"w": 62,
+						"h": 60
+					}
+				}
+			]
+		}
+	],
+	"meta": {
+		"app": "http://free-tex-packer.com",
+		"version": "0.6.7"
+	}
+}
