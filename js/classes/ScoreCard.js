@@ -69,6 +69,9 @@ let ScoreCard = class {
             });
         } else {
             this.phaserObjects.squaresLeft.setText('SQUARES LEFT\n' + _squaresLeft);
+            if (!_squaresLeft){
+                vars.game.board.finished();
+            }
         };
     }
 

@@ -3,7 +3,7 @@ var vars = {
     DEBUG: true,
     name: 'Going Dotty',
 
-    version: 0.1,
+    version: 0.18,
 
     fonts: {
         default:  { fontFamily: 'Helvetica, Arial, sans-serif', fontSize: '36px', color: '#ffffff', stroke: '#000000', strokeThickness: 3, align: 'center', lineSpacing: 20 }
@@ -187,7 +187,7 @@ var vars = {
     game: {
         board: null,
         nameEntry: null,
-        options: { difficulty: 0, playerCurrent: 1, playersTotal: 2 },
+        options: { difficulty: 0, playerCurrent: 1, playersTotal: 2, playersMin: 2, playersMax: 4 },
         players: {
             p1: null,
             p2: null,
@@ -353,6 +353,9 @@ var vars = {
 
             vars.game.nameEntry = new NameEntry();
             vars.game.optionsScreen = new OptionsScreen();
+
+            scene.tweens.addCounter({ from:0, to:1, useFrames: true, duration: 10, onComplete: ()=> { vars.UI.generateWinScreen(); }});
+
         },
 
         generateBackground: (_colour,_w=null, _h=null)=> {
@@ -364,6 +367,10 @@ var vars = {
 
             let bg = scene.add.image(width/2, height/2, _colour).setScale(width,height);
             return bg;
+        },
+
+        generateWinScreen() {
+            vars.game.winScreen = new WinScreen();
         }
     }
-}
+};

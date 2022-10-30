@@ -5,10 +5,8 @@ String.prototype.capitalise = ()=> {
 
 function arraySortByKey(array, key) {
     if (!Array.isArray(array)) return false;
-    // you can tell this was written by someone else. this sort could easily be 1 line
     return array.sort(function(a, b) {
-        var x = a[key]; var y = b[key];
-        return ((x < y) ? -1 : ((x > y) ? 1 : 0));
+        return ((a[key] < b[key]) ? -1 : ((a[key] > b[key]) ? 1 : 0));
     });
 };
 

@@ -261,6 +261,8 @@ let Board = class {
 
         this.givePlayerPoints(points);
         vars.game.scoreCard.updateBoxesLeft(this.squaresLeft);
+
+        !this.squaresLeft && this.finished();
     }
 
     connectDots(_gameObject) {
@@ -308,6 +310,28 @@ let Board = class {
         
         // now we need to check if this line created a box
         this.checkForConnectedLines(objects,lineType,link);
+    }
+
+    finished() {
+        console.log(`All Squares have been outlined`);
+        debugger;
+        let optionsScreen = vars.game.optionsScreen;
+        let players = vars.game.players;
+        // figure out the order of the players
+        let scores = [];
+        for (let p=1; p<=optionsScreen.players; p++) {
+            let playerID = `p${p}`;
+            let playerScore = players[playerID].score;
+            scores.push({ score: playerScore, playerID: playerID });
+        };
+        arraySortByKey(scores,'score').reverse();
+        let playersOrder = [];
+        scores.forEach((_s)=> {
+            playersOrder.push(_s.playerID);
+        });
+
+        // now show the win screen
+        vars.game.winScreen.show(true,playersOrder);
     }
 
     flashAllDots() {

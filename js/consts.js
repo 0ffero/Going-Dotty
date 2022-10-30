@@ -7,6 +7,7 @@ const consts = {
 
     depths: {
         board: 10,
+        winScreen: 15,
         options: 50,
         nameEntry: 55,
         loadingScreen: 100

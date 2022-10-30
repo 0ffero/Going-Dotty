@@ -27,6 +27,9 @@ let NameEntry = class {
     initUI() {
         let font = { ...vars.fonts.default, ...{ fontSize: '64px' } };
         this.container = scene.add.container().setName('nameEntry').setDepth(consts.depths.nameEntry);
+
+        let bg = this.phaserObjects.bg = vars.UI.generateBackground('pixel3');
+        this.container.add(bg);
         let y = 0; let spacing = 150; let maxButtonsPerLine = 10;
         let x;
         for (let a=0; a<=25; a++) {
@@ -38,7 +41,7 @@ let NameEntry = class {
             let letter = scene.add.text(c.x,c.y, l, font).setOrigin(0.5);
             this.container.add([buttonBG,letter]);
 
-            if (a && a%maxButtonsPerLine===maxButtonsPerLine-1) { y+=spacing };
+            (a && a%maxButtonsPerLine===maxButtonsPerLine-1) && (y+=spacing);
         };
 
         let a = 26;
@@ -84,6 +87,9 @@ let NameEntry = class {
             let letter = scene.add.text(c.x,c.y, _b, font).setOrigin(0.5);
             this.container.add([buttonBG,letter]);
         });
+
+        this.positionContainer({ x: positions[0], y: 200 });
+
         this.show(false);
     }
 
@@ -123,6 +129,12 @@ let NameEntry = class {
         this.name+=letter;
 
         this.phaserObjects[`letter_${this.name.length-1}`].text = letter;
+    }
+
+    positionContainer(_pos) {
+        this.container.setPosition(_pos.x,_pos.y);
+        this.phaserObjects.bg.x-=_pos.x/2;
+        this.phaserObjects.bg.y-=_pos.y/2;
     }
 
     show(_show=true, _playerID=null) {
