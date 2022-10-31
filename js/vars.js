@@ -3,7 +3,7 @@ var vars = {
     DEBUG: true,
     name: 'Going Dotty',
 
-    version: 0.2,
+    version: 0.99,
 
     fonts: {
         default:  { fontFamily: 'Helvetica, Arial, sans-serif', fontSize: '36px', color: '#ffffff', stroke: '#000000', strokeThickness: 3, align: 'center', lineSpacing: 20 }
@@ -212,19 +212,12 @@ var vars = {
         },
         playersReset() {
             let players = vars.game.players;
-            for (let p in players) {
-                players[p]=null;
-            };
+            for (let p in players) { players[p]=null; };
         },
 
         init: ()=> {
            vars.DEBUG ? console.log(`\nFN: game > init`) : null;
 
-        },
-
-        start: ()=> {
-            vars.game.generatePlayers();
-            vars.game.generateNewBoardAndScoreCard();            
         },
 
         generateNewBoardAndScoreCard: ()=> {
@@ -250,6 +243,11 @@ var vars = {
         showNameEntry: (_playerID)=> {
             if (_playerID<0 || _playerID>3) return `Invalid player ID ${_playerID}`;
             vars.game.nameEntry.show(true, _playerID);
+        },
+
+        start: ()=> {
+            vars.game.generatePlayers();
+            vars.game.generateNewBoardAndScoreCard();            
         }
     },
 

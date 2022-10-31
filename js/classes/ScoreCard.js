@@ -48,9 +48,7 @@ let ScoreCard = class {
     }
 
     destroy() {
-        for (let g in this.groups) {
-            this.groups[g].destroy(true,true);
-        };
+        for (let g in this.groups) { this.groups[g].destroy(true,true); };
         this.container.destroy(true);
 
         vars.game.scoreCard=null;

@@ -287,6 +287,25 @@ let Board = class {
         !this.squaresLeft && this.finished();
     }
 
+    checkForConnection(_from,_to) {
+        let rv;
+        if (_from.x===_to.x) { // vertical
+            if (_from.y<_to.y) {
+                rv = `${_from.x},${_from.y},${_to.x},${_to.y}`;
+            } else {
+                rv = `${_to.x},${_to.y},${_from.x},${_from.y}`;
+            };
+        } else { // horizontal
+            if (_from.x<_to.x) {
+                rv = `${_from.x},${_from.y},${_to.x},${_to.y}`;
+            } else {
+                rv = `${_to.x},${_to.y},${_from.x},${_from.y}`;
+            };
+        };
+    
+        return this.connectedLines.includes(rv);
+    }
+
     connectDots(_gameObject) {
         vars.DEBUG && console.log(`Joining ${this.selectedDot.name} and ${_gameObject.name} together`);
         let startXY = { x: this.selectedDot.x, y: this.selectedDot.y };
@@ -371,25 +390,31 @@ let Board = class {
 
     flashAllDots() {
         this.groups.dots.getChildren().forEach((_c,_i)=> {
-            scene.tweens.add({ targets: _c, alpha: 0.1, useFrames: true, delay: _i, duration: 15, yoyo: true });
+            scene.tweens.add({ targets: _c, alpha: 0.1, useFrames: false, delay: _i*8, duration: 250, yoyo: true });
         });
     }
 
     generateSquare() {
         let font = { ...vars.fonts.default };
         let pID = `p${vars.game.options.playerCurrent}`;
-        // we need to know the current players colour then create a box inside the dots
+        let offset = this.dotsDelta/2;
         this.boxPositions.forEach((_bp)=> {
-            let square = scene.add.image(_bp.x,_bp.y,`pixel${pID}`).setScale(this.dotsDelta).setOrigin(0);
-            let c = square.getCenter();
+            let x = _bp.x+offset;
+            let y = _bp.y+offset;
+            let square = scene.add.image(x,y,`pixel${pID}`).setScale(this.dotsDelta/2).setAlpha(0.3);
             let name = vars.game.players[pID].name;
-            let text = scene.add.text(c.x,c.y,name,font).setOrigin(0.5);
+            let text = scene.add.text(x,y,name,font).setOrigin(0.5).setScale(0.5).setAlpha(0.3);
             square.belongsToPlayer = pID;
             this.groups.playerSquares.addMultiple([square, text]);
             this.container.add([square, text]);
 
-            this.sendToBack(text);
-            this.sendToBack(square);
+            // tween the square and text
+            let duration = 750;
+            scene.tweens.add({
+                targets: square, alpha: 1, scale: this.dotsDelta, duration: duration,
+                onComplete: ()=> { vars.game.board.sendToBack(text); vars.game.board.sendToBack(square); }
+            });
+            scene.tweens.add({ targets: text, alpha: 1, scale: 1, duration: duration });
         });
 
         this.boxPositions = [];
@@ -423,15 +448,18 @@ let Board = class {
     }
 
     highlightSurrounding(_x,_y) {
-        console.log(`  >> Highlighting positions around ${_x},${_y}`);
+        vars.DEBUG && console.log(`  >> Highlighting positions around ${_x},${_y}`);
 
         let checks = [[_x-1,_y],[_x+1,_y],[_x,_y-1],[_x,_y+1]];
         checks.forEach((_pos,_i)=> {
-            if ((_pos[0] && _pos[0]<=this.positions.x) && _pos[1] && _pos[1]<=this.positions.y) {
-                console.log(`    >> Highlighting ${_pos[0]},${_pos[1]}`);
-                let connectable = this.container.getByName(`dot_${_pos[0]}_${_pos[1]}`);
-                this.connectables.push(connectable);
-                connectable.setTexture('dotConnectable');
+            if ((_pos[0] && _pos[0]<=this.positions.x) && (_pos[1] && _pos[1]<=this.positions.y)) {
+                let rS = this.checkForConnection({ x: _x, y: _y }, { x:_pos[0], y:_pos[1] });
+                if (!rS) {
+                    vars.DEBUG && console.log(`    >> Highlighting ${_pos[0]},${_pos[1]}`);
+                    let connectable = this.container.getByName(`dot_${_pos[0]}_${_pos[1]}`);
+                    this.connectables.push(connectable);
+                    connectable.setTexture('dotConnectable');
+                };
             };
         });
     }

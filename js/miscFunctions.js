@@ -120,6 +120,12 @@ function generateUserID() { // gens UIDs format [AZ09]*1_[AZ09]*2_[AZ09]*4_[AZ09
     return UID;
 };
 
+var getAllIndexes = (arr, val)=> {
+    var indexes = [];
+    for (let i=0;i<arr.length;i++) { arr[i].includes(val) && indexes.push(i); };
+    return indexes;
+}
+
 function getRandom(_min,_max=null) { // this function can deal with a min/max, array or a string
     if (!Phaser) { console.error(`This function needs Phaser to be initialised before use!`); return false; }
 
