@@ -85,6 +85,7 @@ let OptionsScreen = class {
                 };
                 this.phaserObjects.playerCount.text = options.playersTotal;
                 this.players = options.playersTotal;
+                options.playerCurrent=1;
                 this.updatePlayers();
                 vars.localStorage.saveOptions();
             });

@@ -3,7 +3,7 @@ var vars = {
     DEBUG: true,
     name: 'Going Dotty',
 
-    version: 0.19,
+    version: 0.2,
 
     fonts: {
         default:  { fontFamily: 'Helvetica, Arial, sans-serif', fontSize: '36px', color: '#ffffff', stroke: '#000000', strokeThickness: 3, align: 'center', lineSpacing: 20 }
@@ -63,10 +63,10 @@ var vars = {
                 'pixel15'           : '[a][b]MQBQAAFwAW6lOQIQ[c]',
                 'pixelC'            : '[a][b]M4AwAAzgDNUwEBJA[c]',
 
-                'p1pixel'           : '[a][e][f]47+sLAAPoAZof4S/F[g]',
-                'p2pixel'           : '[a][e][f]w/e8LAAM2AZrp/4ei[g]',
-                'p3pixel'           : '[a][e][f]w9f0PAAKEAZovrB79[g]',
-                'p4pixel'           : '[a][e][f]4/98XAAVMAkz05dMN[g]'
+                'pixelp1'           : '[a][e][f]47+sLAAPoAZof4S/F[g]',
+                'pixelp2'           : '[a][e][f]w/e8LAAM2AZrp/4ei[g]',
+                'pixelp3'           : '[a][e][f]w9f0PAAKEAZovrB79[g]',
+                'pixelp4'           : '[a][e][f]4/98XAAVMAkz05dMN[g]'
             },
             init: ()=> {
                 let fIV = vars.files.images;
@@ -209,6 +209,12 @@ var vars = {
             if (!_returnPlayer) return (`p${options.playerCurrent}`); // the actual player wasnt needed, just the player id, se return it
 
             return gV.players[`p${options.playerCurrent}`];
+        },
+        playersReset() {
+            let players = vars.game.players;
+            for (let p in players) {
+                players[p]=null;
+            };
         },
 
         init: ()=> {

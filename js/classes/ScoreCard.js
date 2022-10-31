@@ -4,8 +4,6 @@ let ScoreCard = class {
         this.players = gV.players;
 
         this.font = { ...vars.fonts.default, ...{fontSize: '42px', strokeThickness: 6 } };
-        /* this.playerColours = gV.playerColours;
-        this.playerNames = gV.playerNames; */
 
         this.phaserObjects = {};
 
@@ -47,6 +45,15 @@ let ScoreCard = class {
         this.container.x = cC.width-this.container.width;
 
         this.setCurrentPlayer('p1');
+    }
+
+    destroy() {
+        for (let g in this.groups) {
+            this.groups[g].destroy(true,true);
+        };
+        this.container.destroy(true);
+
+        vars.game.scoreCard=null;
     }
 
     setCurrentPlayer(_player) {

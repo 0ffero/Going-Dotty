@@ -83,13 +83,13 @@ let Board = class {
         return true;
     }
     initLine(_w) {
-        if (scene.textures.list['line']) return false;
+        if (scene.textures.list[`line_${this.difficulty}`]) return false;
         let graphics = scene.add.graphics();
         let fillColour = 0xcccccc;
         let _h = 12;
         graphics.fillStyle(fillColour);
         graphics.fillRect(0, 0, _w+12, _h);
-        graphics.generateTexture('line',_w+12,_h);
+        graphics.generateTexture(`line_${this.difficulty}`,_w+12,_h);
         graphics.clear().destroy();
     }
 
@@ -99,6 +99,7 @@ let Board = class {
         this.groups = {};
         this.groups.dots = scene.add.group().setName('dots');
         this.groups.lines = scene.add.group().setName('lines');
+        this.groups.playerSquares = scene.add.group().setName('playerSquares');
 
         let border = 20;
         let bg = this.bg = vars.UI.generateBackground('pixel15', this.positions.maxWidth+border*2, this.positions.maxHeight+border*2);
@@ -108,7 +109,7 @@ let Board = class {
 
         let points = this.positions.x;
         let maxWidth = this.positions.maxWidth;
-        let inc = maxWidth/(points-1);
+        let inc = this.dotsDelta = maxWidth/(points-1);
 
         // nos we know the spacing between the dots, we can create the connector line
         this.initLine(inc);
@@ -116,7 +117,7 @@ let Board = class {
         for (let _y=0; _y<points; _y++) {
             for (let _x=0; _x<points; _x++) {
                 let x = _x*inc;
-                let y  = _y*inc;
+                let y = _y*inc;
     
                 let dot = scene.add.image(x,y,'dotUnused').setName(`dot_${_x+1}_${_y+1}`).setInteractive();
                 this.groups.dots.add(dot);
@@ -159,7 +160,7 @@ let Board = class {
         
     }
 
-    checkForConnectedLines(_objects, _lineType, _link) {
+    checkForBoxes(_objects, _lineType, _link) {
         // the incoming objects var is a pair of xy objects in the following form
         // _objects = [left/topmost dot x, y] and [right/lowest dot x, y]
 
@@ -220,12 +221,22 @@ let Board = class {
         // so both have to be tested
         let points = 0;
         let pointsInc = 10;
+        this.boxPositions = [];
         if (boxAtA) {
             vars.DEBUG && console.log('Box found at A');
+            let x = Infinity; let y=Infinity;
+
             points+=pointsInc;
             // add the connecting line to the array
             linesTestsA.push(_link);
             linesTestsA.forEach((_l)=> {
+                let xys = _l.split(',');
+                let xy = this.container.getByName(`dot_${xys[0]}_${xys[1]}`).getCenter();
+                xy.x<x && (x=xy.x);
+                xy.y<y && (y=xy.y);
+                xy = this.container.getByName(`dot_${xys[2]}_${xys[3]}`).getCenter();
+                xy.x<x && (x=xy.x);
+                xy.y<y && (y=xy.y);
                 let lineObject = this.container.getByName(`line_${_l}`);
                 scene.tweens.addCounter({
                     from: 3, to: 12, duration: 1000,
@@ -236,14 +247,24 @@ let Board = class {
                     }
                 });
             });
+            this.boxPositions.push({x: x, y: y});
             this.squaresLeft--;
         };
 
         if (boxAtB) {
             vars.DEBUG && console.log('Box found at B');
+            let x = Infinity; let y=Infinity;
+
             points+=pointsInc;
             !boxAtA && linesTestsB.push(_link);
             linesTestsB.forEach((_l)=> {
+                let xys = _l.split(',');
+                let xy = this.container.getByName(`dot_${xys[0]}_${xys[1]}`).getCenter();
+                xy.x<x && (x=xy.x);
+                xy.y<y && (y=xy.y);
+                xy = this.container.getByName(`dot_${xys[2]}_${xys[3]}`).getCenter();
+                xy.x<x && (x=xy.x);
+                xy.y<y && (y=xy.y);
                 let lineObject = this.container.getByName(`line_${_l}`);
                 scene.tweens.addCounter({
                     from: 3, to: 12, duration: 1000,
@@ -254,10 +275,11 @@ let Board = class {
                     }
                 });
             });
+            this.boxPositions.push({x: x, y: y});
             this.squaresLeft--;
         };
 
-        (boxAtA || boxAtB) && this.flashAllDots();
+        (boxAtA || boxAtB) && (this.flashAllDots(), this.generateSquare());
 
         this.givePlayerPoints(points);
         vars.game.scoreCard.updateBoxesLeft(this.squaresLeft);
@@ -276,7 +298,7 @@ let Board = class {
         to.forEach((_n,_i)=> { to[_i]=_n|0 });
         
         // draw the line
-        let line = scene.add.image(startXY.x,startXY.y,'line');
+        let line = scene.add.image(startXY.x,startXY.y,`line_${this.difficulty}`);
         // reposition it to connect the dots
         let lineType;
         if (startXY.x===endXY.x) { // vertical line
@@ -300,8 +322,7 @@ let Board = class {
         let lineName = `line_${objects[0][0]},${objects[0][1]},${objects[1][0]},${objects[1][1]}`;
         line.setName(lineName);
         this.container.add(line);
-        this.container.sendToBack(line);
-        this.container.sendToBack(this.bg);
+        this.sendToBack(line);
         this.groups.lines.add(line);
         
         let link = objects[0].join(',') +','+ objects[1].join(',');
@@ -309,7 +330,7 @@ let Board = class {
         this.unhighlightDot();
         
         // now we need to check if this line created a box
-        this.checkForConnectedLines(objects,lineType,link);
+        this.checkForBoxes(objects,lineType,link);
     }
 
     destroy(){
@@ -319,7 +340,9 @@ let Board = class {
         this.container.destroy(true);
 
         // reset everything in the score card
-        debugger;
+        vars.game.scoreCard.destroy();
+        // reset the players
+        vars.game.playersReset();
     }
 
     finished() {
@@ -342,7 +365,7 @@ let Board = class {
 
         // now show the win screen
         scene.tweens.addCounter({
-            from:0, to:1, duration:2000, onComplete: ()=> { vars.game.winScreen.show(true,playersOrder); vars.game.board.destroy(); }
+            from:0, to:1, duration:1000, onComplete: ()=> { vars.game.winScreen.show(true,playersOrder); vars.game.board.destroy(); }
         });
     }
 
@@ -350,6 +373,26 @@ let Board = class {
         this.groups.dots.getChildren().forEach((_c,_i)=> {
             scene.tweens.add({ targets: _c, alpha: 0.1, useFrames: true, delay: _i, duration: 15, yoyo: true });
         });
+    }
+
+    generateSquare() {
+        let font = { ...vars.fonts.default };
+        let pID = `p${vars.game.options.playerCurrent}`;
+        // we need to know the current players colour then create a box inside the dots
+        this.boxPositions.forEach((_bp)=> {
+            let square = scene.add.image(_bp.x,_bp.y,`pixel${pID}`).setScale(this.dotsDelta).setOrigin(0);
+            let c = square.getCenter();
+            let name = vars.game.players[pID].name;
+            let text = scene.add.text(c.x,c.y,name,font).setOrigin(0.5);
+            square.belongsToPlayer = pID;
+            this.groups.playerSquares.addMultiple([square, text]);
+            this.container.add([square, text]);
+
+            this.sendToBack(text);
+            this.sendToBack(square);
+        });
+
+        this.boxPositions = [];
     }
 
     getNextPlayer() {
@@ -399,6 +442,11 @@ let Board = class {
         let y = (cC.height-this.positions.maxHeight)/2;
 
         this.container.setPosition(x,y);
+    }
+
+    sendToBack(_object) {
+        this.container.sendToBack(_object);
+        this.container.sendToBack(this.bg);
     }
 
     unhighlightDot() {
