@@ -31,8 +31,10 @@ let WinScreen = class {
         let text = this.phaserObjects.winText = scene.add.text(cC.cX, this.positionsY.text, `${name} wins with ${points}`,font).setOrigin(0.5).setAlpha(0);
         text.show = (_show=true)=> {
             let alpha=_show?1:0;
+            let delay=_show?500:10;
+            let duration=_show?1000:10;
             scene.tweens.add({
-                targets: text, alpha: alpha, duration: 1000,
+                targets: text, alpha: alpha, delay: delay, duration: duration,
                 onComplete: ()=> {
                     _show ? vars.game.winScreen.showContinueButton(true) : vars.game.winScreen.showContinueButton(false);
                 }
@@ -50,8 +52,8 @@ let WinScreen = class {
         
         let continueButton = scene.add.image(cC.cX,cC.height*0.8, 'newGameButtonBG').setInteractive();
         continueButton.on('pointerup', ()=> {
-            // we need to show the options screen
-            debugger;
+            // show the options screen
+            vars.game.winScreen.show(false)
         });
         let continueText = scene.add.text(cC.cX,cC.height*0.8, 'CONTINUE', font).setOrigin(0.5);
         this.continueContainer.add([continueButton,continueText]);
@@ -64,62 +66,6 @@ let WinScreen = class {
     }
 
     generateWinVars() {
-        debugger;
-        this.scoreSets.forEach((_sS,_i)=> {
-            let winPosition = _i;
-            // for each of the scores add the finishing y position based on the players winning position
-            switch (winPosition) {
-                case 0: // winning position
-                    sS.y = this.positionsY.win;
-                    // generate the win text
-                    debugger;
-                break;
-
-                case 1: // 2nd position
-                    sS.y = this.positionsY.secondPlace;
-                break;
-
-                case 2: // 3rd position
-                    sS.y = this.positionsY.thirdPlace;
-                break;
-
-                case 3: // 4th position
-                    sS.y = this.positionsY.fourthPlace;
-                break;
-            };
-
-        });
-    }
-
-    orderPlayerScores() {
-        this.scoreSets = [];
-        for (let pID in this.playerScores) {
-            let score = this.playerScores[pID];
-            let index = this.scoreSets.findIndex(m=>m.score===score);
-            index===-1 ? this.scoreSets.push({ score: score, pID: [pID]}) : this.scoreSets[index].pID.push(pID);
-        };
-        arraySortByKey(this.scoreSets,'score').reverse();
-
-        vars.DEBUG && console.table(this.scoreSets);
-        return;
-    }
-
-    resetPlayerDots() {
-        for (let _p in this.playersDots) {
-            let p = this.playersDots[_p];
-            p.setPosition(p.startX, this.positionsY.start);
-        };
-    }
-
-    // this is the function that re-orders the player dots to show who came in 1st, 2nd etc
-    // incoming order var: order = ['p3','p1','p2','p4']
-    repositionDotsByPoints(_order=[]) {
-        let max = vars.game.options.playersMax;
-
-        // make all dots visible then hide the ones we arent interested in
-        // at the same time we'll import the scores
-        // the scores are needed to determine the finalY position for the
-        // animation as 2 players can have the same score
         this.playerScores = { p1: null, p2: null, p3: null, p4: null };
         let players = vars.game.players;
         for (let pD in this.playersDots) { 
@@ -128,20 +74,121 @@ let WinScreen = class {
         };
         // sort the scores into groups and set the order to highest score first
         this.orderPlayerScores();
-        let hidden = max-_order.length;
-        for (let h=0; h<hidden; h++) { this.playersDots[`p${max-h}`].visible=false; };
+        
+        let fullString = '';
+        this.scoreSets.forEach((_sS,_i)=> {
+            let winPosition = _i;
 
-        // move them into ordered position
-        let cC = consts.canvas;
-        let positions = [this.positionsY.win,this.positionsY.secondPlace,this.positionsY.thirdPlace,this.positionsY.fourthPlace];
-        _order.forEach((_p,_i)=> {
-            scene.tweens.add({
-                targets: this.playersDots[_p],
-                delay: _i*250, duration: 2000,
-                x: cC.cX, y: positions[_i],
-                ease: 'Quintic'
-            });
+            // for each of the scores add the finishing y position based on the players winning position
+            switch (winPosition) {
+                case 0: // winning position
+                    _sS.endY = this.positionsY.win;
+                    // get the xOffsets for the playerDots
+                    let xOffsets = this.getXOffsets(_sS.pID.length);
+                    // generate the win text
+                    let pIDLen = _sS.pID.length-1;
+                    _sS.pID.forEach((_pID,_i)=> {
+                        let name = vars.game.players[_pID].name;
+                        this.playersDots[_pID].endX = xOffsets[_i];
+                        this.playersDots[_pID].endY = _sS.endY;
+                        this.playersDots[_pID].winPosition = winPosition;
+
+                        fullString+=name;
+                        _i+1 < pIDLen && (fullString+=', ');
+                        _i+1===pIDLen && (fullString+=' & ');
+                    });
+                    pIDLen++;
+                    fullString+= pIDLen>1 ? ` DRAW FOR 1ST PLACE WITH ${_sS.score} POINTS.` : ` WINS WITH ${_sS.score} POINTS!`;
+                break;
+
+                case 1: // 2nd position
+                    _sS.endY = this.positionsY.secondPlace;
+                break;
+
+                case 2: // 3rd position
+                    _sS.endY = this.positionsY.thirdPlace;
+                break;
+
+                case 3: // 4th position
+                    _sS.endY = this.positionsY.fourthPlace;
+                break;
+            };
+
+            if (winPosition>0) {
+                let xOffsets = this.getXOffsets(_sS.pID.length);
+                _sS.pID.forEach((_pID,_i)=> {
+                    this.playersDots[_pID].endX = xOffsets[_i];
+                    this.playersDots[_pID].endY = _sS.endY;
+                    this.playersDots[_pID].winPosition = winPosition;
+                });
+            };
         });
+        this.updateWinText(fullString);
+    }
+
+    getXOffsets(_len) {
+        let xOff = 150;
+        let xOffsets;
+        if (_len===1) xOffsets = [0];
+        if (_len===2) xOffsets = [-xOff/2,xOff/2];
+        if (_len===3) xOffsets = [-xOff,0,xOff];
+        if (_len===4) xOffsets = [-xOff*1.5,-xOff/2,xOff/2,xOff*1.5];
+    
+        return xOffsets;
+    }
+
+    orderPlayerScores() {
+        this.scoreSets = [];
+        for (let pID in this.playerScores) {
+            let score = this.playerScores[pID];
+            if (score!==null) {
+                let index = this.scoreSets.findIndex(m=>m.score===score);
+                index===-1 ? this.scoreSets.push({ score: score, pID: [pID]}) : this.scoreSets[index].pID.push(pID);
+            };
+        };
+        arraySortByKey(this.scoreSets,'score').reverse();
+
+        vars.DEBUG && console.log(this.scoreSets);
+        return;
+    }
+
+    resetPlayerDots() {
+        for (let _p in this.playersDots) {
+            let p = this.playersDots[_p];
+            p.endX=null; p.endY=null; p.winPosition=null;
+            p.setPosition(p.startX, this.positionsY.start);
+        };
+    }
+
+    repositionDotsByPoints() {
+        let cC = consts.canvas;
+        let currentDot = 0;
+        for (let pD in this.playersDots) {
+            let playerDot = this.playersDots[pD];
+            if (checkType(playerDot.endX,'number') && checkType(playerDot.endY,'number')) {
+                playerDot.visible=true;
+                scene.tweens.add({
+                    targets: playerDot,
+                    delay: currentDot*250, duration: 2000,
+                    x: cC.cX+playerDot.endX, y: playerDot.endY,
+                    ease: 'Quintic',
+                    onComplete: ()=> {
+                        if (!currentDot) {// first dot has moved to its end position, start fading in the win text
+                            this.phaserObjects.winText.show();
+                        };
+                    }
+                });
+            } else { // hide this dot
+                playerDot.visible=false;
+            }
+
+            // reset the dots vars
+            playerDot.endX=null;
+            playerDot.endY=null;
+            playerDot.winPosition=null;
+
+            currentDot++;
+        };
     }
 
     show(_show=true, _order=[]) {
@@ -150,27 +197,23 @@ let WinScreen = class {
         if (_show && (!checkType(_order,'array') || _order.length<min || _order.length>max)) return `Invalid order sent, it should look something like ['p3','p1','p2','p4'] and must be at LEAST 2 in length`;
 
         this.container.setVisible(_show);
-        if (!_show) { this.resetPlayerDots(); return; };
+        if (!_show) { this.phaserObjects.winText.show(false); this.resetPlayerDots(); this.showOptionsScreen(); return; };
 
-        console.error(`TODO: START FROM HERE ->\n\
-        We can request a show by playing a few moves so the players have points\n\
-        we need to update the win text using this.updateWinText()\n\
-        before continuing!`);
-        debugger;
-        let wV = this.generateWinVars();
-
-        this.updateWinText(wV.name,wV.points);
-
-        this.repositionDotsByPoints(_order);
+        this.generateWinVars(); // this also updates the win string
+        this.repositionDotsByPoints();
     }
 
     showContinueButton(_show=true) {
         this.continueContainer.show(_show);
     }
 
+    showOptionsScreen() {
+        vars.game.optionsScreen && vars.game.optionsScreen.show();
+    }
+
     // incoming _name can be a single player eg 'SJF', or it can be multiple players eg 'SJF and ABC'
-    updateWinText(_name, _points) {
-        this.phaserObjects.winText.text = `${_name} wins with ${_points}`;
+    updateWinText(_fullString) {
+        this.phaserObjects.winText.text = _fullString;
         this.fadeInWinText();
     }
 };

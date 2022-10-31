@@ -3,7 +3,7 @@ var vars = {
     DEBUG: true,
     name: 'Going Dotty',
 
-    version: 0.18,
+    version: 0.19,
 
     fonts: {
         default:  { fontFamily: 'Helvetica, Arial, sans-serif', fontSize: '36px', color: '#ffffff', stroke: '#000000', strokeThickness: 3, align: 'center', lineSpacing: 20 }

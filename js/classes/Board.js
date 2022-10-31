@@ -1,7 +1,7 @@
 let Board = class {
     constructor(_defaults) {
         this.difficulty = vars.game.options.difficulty;
-        this.difficultySettings = [10,20,30];
+        this.difficultySettings = [10,15,20];
         let pointsOnBoard = this.difficultySettings[this.difficulty];
         this.positions = {
             x: pointsOnBoard+1,
@@ -312,9 +312,19 @@ let Board = class {
         this.checkForConnectedLines(objects,lineType,link);
     }
 
+    destroy(){
+        for (let g in this.groups) {
+            this.groups[g].destroy(true,true);
+        };
+        this.container.destroy(true);
+
+        // reset everything in the score card
+        debugger;
+    }
+
     finished() {
         console.log(`All Squares have been outlined`);
-        debugger;
+
         let optionsScreen = vars.game.optionsScreen;
         let players = vars.game.players;
         // figure out the order of the players
@@ -331,7 +341,9 @@ let Board = class {
         });
 
         // now show the win screen
-        vars.game.winScreen.show(true,playersOrder);
+        scene.tweens.addCounter({
+            from:0, to:1, duration:2000, onComplete: ()=> { vars.game.winScreen.show(true,playersOrder); vars.game.board.destroy(); }
+        });
     }
 
     flashAllDots() {
