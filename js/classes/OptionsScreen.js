@@ -6,6 +6,7 @@ let OptionsScreen = class {
 
         this.phaserObjects = {};
 
+        this.initDots();
         this.initPlayerDots();
         this.initStartButton();
 
@@ -14,7 +15,58 @@ let OptionsScreen = class {
             onComplete: ()=> { vars.game.optionsScreen.initUI(); }
         });
     }
+    initDots() {
+        let radius = this.dotRadius = 6;
+        if (scene.textures.list['dotUnunsed']) return false;
+        let graphics = scene.add.graphics();
+    
+        let lineColor = 0x999999;
+        let fillColorEmpty = 0x000000;
 
+        let lineColorUsed = 0x333333;
+        let fillColorUsed = 0xcccccc;
+        
+        let lineColorConnectable = 0xffff00;
+        let fillColorConnectable = 0x000000;
+        let thickness = 4;
+    
+        graphics.lineStyle(thickness, lineColor);
+        graphics.fillStyle(fillColorEmpty);
+    
+        let c = new Phaser.Geom.Point(radius+thickness/2, radius+thickness/2);
+        
+        // empty dot
+        graphics.strokeCircle(c.x, c.y, radius);
+        graphics.fillCircle(c.x, c.y, radius);
+        
+        let d = radius*2+thickness;
+        graphics.generateTexture('dotUnused',d,d);
+        graphics.clear();
+    
+        
+        // filled dot
+        graphics.lineStyle(thickness, lineColorUsed);
+        graphics.fillStyle(fillColorUsed);
+    
+        graphics.strokeCircle(c.x, c.y, radius);
+        graphics.fillCircle(c.x, c.y, radius);
+    
+        graphics.generateTexture('dotUsed',d,d);
+        graphics.clear();
+    
+    
+        // conectable dot
+        graphics.lineStyle(thickness, lineColorConnectable);
+        graphics.fillStyle(fillColorConnectable);
+    
+        graphics.strokeCircle(c.x, c.y, radius);
+        graphics.fillCircle(c.x, c.y, radius);
+    
+        graphics.generateTexture('dotConnectable',d,d);
+        graphics.clear().destroy();
+
+        return true;
+    }
     initPlayerDots() {
         let thickness = 4;
         let lineColor = 0xffffff;
@@ -54,6 +106,7 @@ let OptionsScreen = class {
         let cC = consts.canvas;
         let font = { ...vars.fonts.default, ...{ fontSize: '64px' } };
         let smallFont = { ...font, ...{ fontSize: '48px' } };
+        let versionFont = { ...font, ...{ fontSize: '24px' } };
 
         let container = this.container = scene.add.container().setName('options');
         let bg = vars.UI.generateBackground('pixel3').setInteractive(); // interactive so that clicks wont pass through
@@ -62,10 +115,19 @@ let OptionsScreen = class {
         let y =cC.height*0.15;
         let logo = scene.add.image(cC.cX,-100,'ui','gameLogo');
         scene.tweens.add({
-            targets: logo, y: y, delay: 1500, duration: 2000, ease: 'Bounce'
+            targets: logo, y: y, delay: 1500, duration: 2000, ease: 'Bounce',
+            onComplete: ()=> {
+                let bottomRight = logo.getBottomRight();
+                let version = scene.add.text(bottomRight.x-300, bottomRight.y+20, `Version ${vars.version}`, versionFont).setOrigin(1,0).setAlpha(0);
+                container.add(version);
+                scene.tweens.add({
+                    targets: version, alpha: 0.8, x: bottomRight.x-20, duration: 3000, ease: 'Quad'
+                });
+            }
         });
         container.add(logo);
 
+        // PLAYERS
         y = cC.height*0.3;
         let text = scene.add.text(cC.cX, y, 'PLAYERS', font).setOrigin(0.5);
         container.add(text);
@@ -116,20 +178,51 @@ let OptionsScreen = class {
         this.updatePlayers();
 
 
+        // BOARD SIZE
+        y = cC.height*0.7;
+        let bStext = scene.add.text(cC.cX, y, 'BOARD SIZE', font).setOrigin(0.5);
+        container.add(bStext);
+
+        y = cC.height*0.8;
+        let boxesW = options.difficultySettings[options.difficulty];
+        let cDiff = this.phaserObjects.currentDifficulty = scene.add.text(cC.cX, y, `${boxesW}x${boxesW} (${boxesW*boxesW} BOXES)`, font).setOrigin(0.5);
+        container.add(cDiff);
+
+        // left and right arrows
+        [cC.width*0.35,cC.width*0.65].forEach((_xpos,_i)=> {
+            let arrow = scene.add.image(_xpos,y,'ui','arrowIcon').setInteractive();
+            container.add(arrow);
+            !_i && arrow.setAngle(180);
+            arrow.on('pointerup', ()=> {
+                if (!_i) {
+                    options.difficulty = clamp(options.difficulty-1,0,3);
+                } else {
+                    options.difficulty = clamp(options.difficulty+1,0,3);
+                };
+                let boxesW = options.difficultySettings[options.difficulty];
+                this.phaserObjects.currentDifficulty.text = `${boxesW}x${boxesW} (${boxesW*boxesW} BOXES)`;
+                this.difficulty = options.difficulty;
+                vars.localStorage.saveOptions();
+            });
+        });
+
+
         // start button
-        let startButton = scene.add.image(cC.cX,cC.height*0.8, 'newGameButtonBG').setInteractive();
+        y = cC.height*0.95;
+        let startButton = scene.add.image(cC.cX,y, 'newGameButtonBG').setInteractive();
         startButton.on('pointerup', ()=> {
             this.startGame();
         });
         let c = startButton.getCenter();
-        let startText = scene.add.text(cC.cX,cC.height*0.8, 'START', font).setOrigin(0.5);
+        let startText = scene.add.text(cC.cX,y, 'START', font).setOrigin(0.5);
         container.add([startButton,startText]);
 
-        
+        vars.particles.generateBubbles();
     }
 
     show(_show=true) {
         this.container.setVisible(_show);
+        scene.containers.bubble.show(_show);
     }
 
     startGame() {

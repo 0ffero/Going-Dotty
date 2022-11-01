@@ -1,7 +1,7 @@
 let Board = class {
     constructor(_defaults) {
         this.difficulty = vars.game.options.difficulty;
-        this.difficultySettings = [10,15,20];
+        this.difficultySettings = [5,10,15,20];
         let pointsOnBoard = this.difficultySettings[this.difficulty];
         this.positions = {
             x: pointsOnBoard+1,
@@ -20,67 +20,12 @@ let Board = class {
         this.connectedLines = [];
         this.selectedDot = null;
 
-
         this.init();
-
     }
 
     init() {
-        this.initDots();
-
+        this.dotRadius = vars.game.optionsScreen.dotRadius;
         this.buildUI();
-    }
-    initDots() {
-        if (scene.textures.list['dotUnunsed']) return false;
-        let graphics = scene.add.graphics();
-    
-        let lineColor = 0x999999;
-        let fillColorEmpty = 0x000000;
-
-        let lineColorUsed = 0x333333;
-        let fillColorUsed = 0xcccccc;
-        
-        let lineColorConnectable = 0xffff00;
-        let fillColorConnectable = 0x000000;
-        let thickness = 4;
-    
-        graphics.lineStyle(thickness, lineColor);
-        graphics.fillStyle(fillColorEmpty);
-    
-        let radius = this.dotRadius = 6;
-        let c = new Phaser.Geom.Point(radius+thickness/2, radius+thickness/2);
-        
-        // empty dot
-        graphics.strokeCircle(c.x, c.y, radius);
-        graphics.fillCircle(c.x, c.y, radius);
-        
-        let d = radius*2+thickness;
-        graphics.generateTexture('dotUnused',d,d);
-        graphics.clear();
-    
-        
-        // filled dot
-        graphics.lineStyle(thickness, lineColorUsed);
-        graphics.fillStyle(fillColorUsed);
-    
-        graphics.strokeCircle(c.x, c.y, radius);
-        graphics.fillCircle(c.x, c.y, radius);
-    
-        graphics.generateTexture('dotUsed',d,d);
-        graphics.clear();
-    
-    
-        // conectable dot
-        graphics.lineStyle(thickness, lineColorConnectable);
-        graphics.fillStyle(fillColorConnectable);
-    
-        graphics.strokeCircle(c.x, c.y, radius);
-        graphics.fillCircle(c.x, c.y, radius);
-    
-        graphics.generateTexture('dotConnectable',d,d);
-        graphics.clear().destroy();
-
-        return true;
     }
     initLine(_w) {
         if (scene.textures.list[`line_${this.difficulty}`]) return false;

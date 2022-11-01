@@ -1,9 +1,23 @@
 "use strict";
 var vars = {
-    DEBUG: true,
+    DEBUG: false,
     name: 'Going Dotty',
 
-    version: 0.99,
+    version: 1.1,
+
+    versionInfo: [
+        { v: 0.99,
+            info: 'Actually v1.0. The reason for the numbering discrepency is because Ive made new pixel colours for the players (as the current ones are too bright).\
+                    Unfortunately my base64 script is on my main machine. So the game IS 1.0 sans the new square colours'
+        },
+        { v: 1.01,
+            info: 'Added particles to the new game screen'
+        },
+        { v: 1.1,
+            info: 'Updated to new squares colours.\
+                    Added the difficulty selector the the options screen. Works well :)'
+        }
+    ],
 
     fonts: {
         default:  { fontFamily: 'Helvetica, Arial, sans-serif', fontSize: '36px', color: '#ffffff', stroke: '#000000', strokeThickness: 3, align: 'center', lineSpacing: 20 }
@@ -51,7 +65,7 @@ var vars = {
             postC: 'AAAABJRU5ErkJggg==',
             postD: 'AAAACklEQV',
             postE: 'IAAACQd1Pe',
-            postF: 'AAAADElEQVR42mP',
+            postF: 'AAAADElEQVR42m',
             postG: 'AAAAAElFTkSuQmCC',
             base64s: {
                 'blackpixel'        : '[a][e][d]R4AWMAAgAABAABsYaQRA[c]',
@@ -63,10 +77,10 @@ var vars = {
                 'pixel15'           : '[a][b]MQBQAAFwAW6lOQIQ[c]',
                 'pixelC'            : '[a][b]M4AwAAzgDNUwEBJA[c]',
 
-                'pixelp1'           : '[a][e][f]47+sLAAPoAZof4S/F[g]',
-                'pixelp2'           : '[a][e][f]w/e8LAAM2AZrp/4ei[g]',
-                'pixelp3'           : '[a][e][f]w9f0PAAKEAZovrB79[g]',
-                'pixelp4'           : '[a][e][f]4/98XAAVMAkz05dMN[g]'
+                'pixelp1'           : '[a][e][f]No8PUFAAJrARu8dLmV[g]',
+                'pixelp2'           : '[a][e][f]PwbfAFAAI4ARtFfkfd[g]',
+                'pixelp3'           : '[a][e][f]Pw9W0AAAIFARtLehgV[g]',
+                'pixelp4'           : '[a][e][f]NoaPAFAALRAU7B4efL[g]',
             },
             init: ()=> {
                 let fIV = vars.files.images;
@@ -187,7 +201,7 @@ var vars = {
     game: {
         board: null,
         nameEntry: null,
-        options: { difficulty: 0, playerCurrent: 1, playersTotal: 2, playersMin: 2, playersMax: 4 },
+        options: { difficulty: 1, difficultySettings: [5,10,15,20], playerCurrent: 1, playersTotal: 2, playersMin: 2, playersMax: 4 },
         players: {
             p1: null,
             p2: null,
@@ -322,20 +336,29 @@ var vars = {
             scene.particles = {}
         },
 
-        new: ()=> {
-            /* EXAMPLE PARTICLE EMITTER
-            // let name = 'particleName';
-            // scene.particles[name] = scene.add.particles(name);
+        generateBubbles: ()=> {
+            let bubblesContainer = scene.containers.bubble =  scene.add.container().setName('bubblesContainer').setDepth(consts.depths.bubbles);
+            bubblesContainer.bubblesTween = scene.tweens.addCounter({
+                from: 0, to: 1, duration: 1000, repeat: -1,
+                onRepeat: ()=> {
+                    if (!bubblesContainer.visible) return;
+                    let x = getRandom(5, consts.canvas.width/10-5)*10;
+                    let y = getRandom(5, consts.canvas.height/10-5)*10;
+                    let texture = getRandom(['dotConnectable','dotUsed','dotUnused']);
+                    let bubble = scene.add.image(x,y,texture);
+                    bubblesContainer.add(bubble);
+                    let duration = getRandom(2,4)*1000;
+                    let finalScale = getRandom(2,5);
+                    scene.tweens.add({
+                        targets: bubble, alpha: 0, scale: finalScale, duration: duration, onComplete: (_t,_o)=> { _o[0].destroy(); }
+                    });
+                }
+            });
 
-            // Create Emitter
-            scene.particles[name].createEmitter({
-                x: x, y: y,
-                speedX: { min: 10, max: 100},
-                lifespan: 1000,
-                frequency: 10, quantity: 1
-                blendMode: 'ADD',
-                deathZone: { type: 'onLeave', source: square }
-            }); */
+            bubblesContainer.show = (_show=true)=> {
+                bubblesContainer.visible=_show;
+                !_show && bubblesContainer.removeAll(true);
+            };
         }
     },
 
