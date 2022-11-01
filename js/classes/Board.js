@@ -329,7 +329,7 @@ let Board = class {
 
         // now show the win screen
         scene.tweens.addCounter({
-            from:0, to:1, duration:1000, onComplete: ()=> { vars.game.winScreen.show(true,playersOrder); vars.game.board.destroy(); }
+            from:0, to:1, duration:1500, onComplete: ()=> { vars.game.winScreen.show(true,playersOrder); vars.game.board.destroy(); }
         });
     }
 

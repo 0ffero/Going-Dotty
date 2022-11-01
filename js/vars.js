@@ -3,7 +3,7 @@ var vars = {
     DEBUG: false,
     name: 'Going Dotty',
 
-    version: 1.1,
+    version: 1.11,
 
     versionInfo: [
         { v: 0.99,
@@ -16,6 +16,9 @@ var vars = {
         { v: 1.1,
             info: 'Updated to new squares colours.\
                     Added the difficulty selector the the options screen. Works well :)'
+        },
+        { v: 1.11,
+            info: 'Minor timing bug causing the win screen to break is now fixed'
         }
     ],
 
