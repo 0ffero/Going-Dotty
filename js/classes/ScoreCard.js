@@ -67,7 +67,7 @@ let ScoreCard = class {
     updateBoxesLeft(_squaresLeft, _init=false) {
         if (_init) {
             scene.tweens.addCounter({
-                from: 0, to: _squaresLeft, useFrames: true, duration: 180,
+                from: 0, to: _squaresLeft, useFrames: true, duration: 120,
                 onUpdate: (_v)=> {
                     this.phaserObjects.squaresLeft.text = `SQUARES LEFT\n${_v.getValue()|0}`;
                 }

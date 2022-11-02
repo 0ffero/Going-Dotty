@@ -15,6 +15,38 @@ let OptionsScreen = class {
             onComplete: ()=> { vars.game.optionsScreen.initUI(); }
         });
     }
+    initDevBounce() {
+        let cC = consts.canvas;
+        
+        let sX = cC.width;
+        let eX = cC.width*0.833;
+        let sY = cC.height*0.75;
+        let eY = cC.height*0.95;
+        
+        let short = 1500;
+        let long = 2000;
+        
+        let easeX = 'Quad';
+        let easeY = 'Bounce';
+        
+        let delay = 4000;
+        let delayInc = 750;
+        let a = scene.add.text(sX, sY, 'OFFER0',vars.fonts.default).setAlpha(0);
+        a.tweenX = scene.tweens.add({ targets: a, delay: delay, alpha: 1, x: eX, duration: short, ease: easeX });
+        a.tweenY = scene.tweens.add({ targets: a, delay: delay, y: eY, duration: long, ease: easeY });
+
+        delay+=delayInc;
+        let b = scene.add.text(sX,sY, 'OCT',vars.fonts.default).setAlpha(0);
+        b.tweenX = scene.tweens.add({ targets: b, delay: delay, alpha: 1, x: eX+175, duration: short, ease: easeX });
+        b.tweenY = scene.tweens.add({ targets: b, delay: delay, y: eY, duration: long, ease: easeY });
+
+        delay+=delayInc;
+        let c = scene.add.text(sX,sY, '2022',vars.fonts.default).setAlpha(0);
+        c.tweenX = scene.tweens.add({ targets: c, delay: delay, alpha: 1, x: eX+275, duration: short, ease: easeX });
+        c.tweenY = scene.tweens.add({ targets: c, delay: delay, y: eY, duration: long, ease: easeY });
+
+        this.container.add([a,b,c]);
+    }
     initDots() {
         let radius = this.dotRadius = 6;
         if (scene.textures.list['dotUnunsed']) return false;
@@ -216,6 +248,8 @@ let OptionsScreen = class {
         let c = startButton.getCenter();
         let startText = scene.add.text(cC.cX,y, 'START', font).setOrigin(0.5);
         container.add([startButton,startText]);
+
+        this.initDevBounce();
 
         vars.particles.generateBubbles();
     }

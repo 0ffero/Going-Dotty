@@ -3,7 +3,7 @@ var vars = {
     DEBUG: false,
     name: 'Going Dotty',
 
-    version: 1.11,
+    version: 1.12,
 
     versionInfo: [
         { v: 0.99,
@@ -19,6 +19,9 @@ var vars = {
         },
         { v: 1.11,
             info: 'Minor timing bug causing the win screen to break is now fixed'
+        },
+        { v: 1.12,
+            info: 'Added dev bounce'
         }
     ],
 
