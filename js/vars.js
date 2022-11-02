@@ -3,7 +3,7 @@ var vars = {
     DEBUG: false,
     name: 'Going Dotty',
 
-    version: 1.12,
+    version: 1.13,
 
     versionInfo: [
         { v: 0.99,
@@ -22,6 +22,10 @@ var vars = {
         },
         { v: 1.12,
             info: 'Added dev bounce'
+        },
+        { v: 1.13,
+            info: 'Added new repeatable background to all screens (picks randomly from 3 at the start of the game)\
+                   Updated the main logo. WinScreen changed slightly'
         }
     ],
 
@@ -380,9 +384,12 @@ var vars = {
     },
 
     UI: {
+        repeats: ['repeat_1','repeat_2','repeat_3'],
 
         init: ()=> {
             vars.DEBUG ? console.log(`FN: ui > init`) : null;
+
+            vars.UI.generateRepeatingBackground();
 
             vars.game.nameEntry = new NameEntry();
             vars.game.optionsScreen = new OptionsScreen();
@@ -400,6 +407,25 @@ var vars = {
 
             let bg = scene.add.image(width/2, height/2, _colour).setScale(width,height);
             return bg;
+        },
+        generateRepeatingBackground: (_frame)=> {
+            if (!_frame) _frame = getRandom(vars.UI.repeats);
+            let cC = consts.canvas;
+
+            let frame = scene.textures.getFrame('ui',_frame);
+            if (frame.name !==_frame) return `Frame ${_frame} not found`; // Phaser will return the first frame in the texture if the frame requested wasnt found, coz dumb. this is the fix
+
+            let fW = frame.width;
+            let fH = frame.height;
+
+            let wRepeats = (cC.width/fW|0)+1;
+            let hRepeats = (cC.height/fH|0)+1;
+            let totalRepeats = wRepeats*hRepeats-1;
+            let group = scene.add.group({ key: 'ui', frame: _frame, repeat: totalRepeats });
+            //  Align them in a grid
+            Phaser.Actions.GridAlign(group.getChildren(), { width: wRepeats, cellWidth: fW, cellHeight: fH, x: fW/2, y: fH/2 });
+
+            return group;
         },
 
         generateWinScreen() {

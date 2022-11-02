@@ -13,9 +13,6 @@ let WinScreen = class {
         let depth = consts.depths.winScreen;
         let container = this.container = scene.add.container().setName('winScreen').setDepth(depth);
 
-        let bg = vars.UI.generateBackground('pixel3');
-        container.add(bg);
-
         let p = 1;
         let y = this.positionsY.start;
         for (let pDot in this.playersDots) {
@@ -48,7 +45,7 @@ let WinScreen = class {
             let alpha=_show?1:0;
             let duration = !_show ? 100 : 2000;
             cCon.tween = scene.tweens.add({ targets: cCon, alpha: alpha, duration: duration, onComplete: ()=> { cCon.tween=null} });
-        }
+        };
         
         let continueButton = scene.add.image(cC.cX,cC.height*0.8, 'newGameButtonBG').setInteractive();
         continueButton.on('pointerup', ()=> {
@@ -171,7 +168,7 @@ let WinScreen = class {
                     targets: playerDot,
                     delay: currentDot*250, duration: 2000,
                     x: cC.cX+playerDot.endX, y: playerDot.endY,
-                    ease: 'Quintic',
+                    ease: 'Quad.easeOut',
                     onComplete: ()=> {
                         if (!currentDot) {// first dot has moved to its end position, start fading in the win text
                             this.phaserObjects.winText.show();

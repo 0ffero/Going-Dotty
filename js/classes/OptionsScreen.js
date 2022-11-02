@@ -141,9 +141,7 @@ let OptionsScreen = class {
         let versionFont = { ...font, ...{ fontSize: '24px' } };
 
         let container = this.container = scene.add.container().setName('options');
-        let bg = vars.UI.generateBackground('pixel3').setInteractive(); // interactive so that clicks wont pass through
-        container.add(bg);
-
+        
         let y =cC.height*0.15;
         let logo = scene.add.image(cC.cX,-100,'ui','gameLogo');
         scene.tweens.add({
@@ -153,7 +151,7 @@ let OptionsScreen = class {
                 let version = scene.add.text(bottomRight.x-300, bottomRight.y+20, `Version ${vars.version}`, versionFont).setOrigin(1,0).setAlpha(0);
                 container.add(version);
                 scene.tweens.add({
-                    targets: version, alpha: 0.8, x: bottomRight.x-20, duration: 3000, ease: 'Quad'
+                    targets: version, alpha: 0.8, x: bottomRight.x+20, duration: 3000, ease: 'Quad'
                 });
             }
         });
