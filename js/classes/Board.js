@@ -2,6 +2,8 @@ let Board = class {
     constructor(_defaults) {
         this.difficulty = vars.game.options.difficulty;
         this.difficultySettings = [5,10,15,20];
+        this.pointsInc = 10;
+        this.scorePopups = [];
         let pointsOnBoard = this.difficultySettings[this.difficulty];
         this.positions = {
             x: pointsOnBoard+1,
@@ -47,7 +49,7 @@ let Board = class {
         this.groups.playerSquares = scene.add.group().setName('playerSquares');
 
         let border = 20;
-        let bg = this.bg = vars.UI.generateBackground('pixel15', this.positions.maxWidth+border*2, this.positions.maxHeight+border*2);
+        let bg = this.bg = vars.UI.generateBackground('pixel15', this.positions.maxWidth+border*2, this.positions.maxHeight+border*2).setAlpha(0.8);
         bg.x-=border;
         bg.y-=border;
         this.container.add(bg);
@@ -165,13 +167,12 @@ let Board = class {
         // its possible a connecting line can create two boxes
         // so both have to be tested
         let points = 0;
-        let pointsInc = 10;
         this.boxPositions = [];
         if (boxAtA) {
             vars.DEBUG && console.log('Box found at A');
             let x = Infinity; let y=Infinity;
 
-            points+=pointsInc;
+            points+=this.pointsInc;
             // add the connecting line to the array
             linesTestsA.push(_link);
             linesTestsA.forEach((_l)=> {
@@ -200,7 +201,7 @@ let Board = class {
             vars.DEBUG && console.log('Box found at B');
             let x = Infinity; let y=Infinity;
 
-            points+=pointsInc;
+            points+=this.pointsInc;
             !boxAtA && linesTestsB.push(_link);
             linesTestsB.forEach((_l)=> {
                 let xys = _l.split(',');
@@ -224,7 +225,7 @@ let Board = class {
             this.squaresLeft--;
         };
 
-        (boxAtA || boxAtB) && (this.flashAllDots(), this.generateSquare());
+        (boxAtA || boxAtB) && (this.flashAllDots(), this.scorePopups = [], this.generateSquare());
 
         this.givePlayerPoints(points);
         vars.game.scoreCard.updateBoxesLeft(this.squaresLeft);
@@ -298,9 +299,10 @@ let Board = class {
     }
 
     destroy(){
-        for (let g in this.groups) {
-            this.groups[g].destroy(true,true);
-        };
+        this.scorePopups.forEach((_c)=> { _c.remove(); });
+        this.scorePopups = [];
+        
+        for (let g in this.groups) { this.groups[g].destroy(true,true); };
         this.container.destroy(true);
 
         // reset everything in the score card
@@ -334,15 +336,18 @@ let Board = class {
     }
 
     flashAllDots() {
+        let v = this.difficulty>1 ? { delayMult: 2, duration: 125 } :  { delayMult: 8, duration: 250 };
         this.groups.dots.getChildren().forEach((_c,_i)=> {
-            scene.tweens.add({ targets: _c, alpha: 0.1, useFrames: false, delay: _i*8, duration: 250, yoyo: true });
+            scene.tweens.add({ targets: _c, alpha: 0.1, useFrames: false, delay: _i*v.delayMult, duration: v.duration, yoyo: true });
         });
     }
 
     generateSquare() {
-        let font = { ...vars.fonts.default };
+        let fontSize = this.difficulty>1 ? '18px' : '36px';
+        let font = { ...vars.fonts.default, ...{ fontSize: fontSize} };
         let pID = `p${vars.game.options.playerCurrent}`;
         let offset = this.dotsDelta/2;
+        this.scorePopups = [];
         this.boxPositions.forEach((_bp)=> {
             let x = _bp.x+offset;
             let y = _bp.y+offset;
@@ -360,6 +365,8 @@ let Board = class {
                 onComplete: ()=> { vars.game.board.sendToBack(text); vars.game.board.sendToBack(square); }
             });
             scene.tweens.add({ targets: text, alpha: 1, scale: 1, duration: duration });
+
+            this.scorePopup({x:x,y:y});
         });
 
         this.boxPositions = [];
@@ -415,6 +422,22 @@ let Board = class {
         let y = (cC.height-this.positions.maxHeight)/2;
 
         this.container.setPosition(x,y);
+    }
+
+    scorePopup(_position) {
+        let font = { ...vars.fonts.default, ...{ fontSize: '32px' } };
+        let name = `s_${getRandom(0,99999)}`;
+        let s = scene.add.text(_position.x, _position.y-32,`+${this.pointsInc}`, font).setOrigin(0.5).setName(name);
+        this.container.add(s);
+        this.scorePopups.push(s);
+        s.tween = scene.tweens.add({
+            targets: s, y: s.y-64, alpha: 0, duration: 1250, onComplete: (_t,_o)=> {
+                let b = vars.game.board;
+                let index = b.scorePopups.find(m=>m===_o[0].name);
+                b.scorePopups.splice(index,1);
+                _o[0].destroy();
+            }
+        });
     }
 
     sendToBack(_object) {

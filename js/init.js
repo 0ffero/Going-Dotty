@@ -4,6 +4,8 @@ var config = {
     title: vars.name,
     type: Phaser.CANVAS,
     version: vars.version,
+    url: window.location.href,
+    banner: false,
 
     backgroundColor: '#111111',
     disableContextMenu: true,

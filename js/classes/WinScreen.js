@@ -48,12 +48,13 @@ let WinScreen = class {
         };
         
         let continueButton = scene.add.image(cC.cX,cC.height*0.8, 'newGameButtonBG').setInteractive();
+        let continueButtonShadow = scene.add.image(cC.cX+8,cC.height*0.8+8, 'newGameButtonBGShadow').setName('iS').setAlpha(0.2).setInteractive();
         continueButton.on('pointerup', ()=> {
             // show the options screen
             vars.game.winScreen.show(false)
         });
         let continueText = scene.add.text(cC.cX,cC.height*0.8, 'CONTINUE', font).setOrigin(0.5);
-        this.continueContainer.add([continueButton,continueText]);
+        this.continueContainer.add([continueButtonShadow,continueButton,continueText]);
         this.container.add(this.continueContainer);
         this.show(false);
     }

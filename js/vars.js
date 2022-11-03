@@ -3,7 +3,7 @@ var vars = {
     DEBUG: false,
     name: 'Going Dotty',
 
-    version: 1.13,
+    version: 1.15,
 
     versionInfo: [
         { v: 0.99,
@@ -20,17 +20,13 @@ var vars = {
         { v: 1.11,
             info: 'Minor timing bug causing the win screen to break is now fixed'
         },
-        { v: 1.12,
-            info: 'Added dev bounce'
-        },
-        { v: 1.13,
-            info: 'Added new repeatable background to all screens (picks randomly from 3 at the start of the game)\
-                   Updated the main logo. WinScreen changed slightly'
+        { v: '1.12->1.15',
+            info: 'UI Overhaul',
         }
     ],
 
     fonts: {
-        default:  { fontFamily: 'Helvetica, Arial, sans-serif', fontSize: '36px', color: '#ffffff', stroke: '#000000', strokeThickness: 3, align: 'center', lineSpacing: 20 }
+        default:  { fontFamily: 'Helvetica, Arial, sans-serif', fontSize: '36px', color: '#ffffff', stroke: '#111111', strokeThickness: 3, align: 'center', lineSpacing: 20 }
     },
 
     init: function(_phase) {
@@ -218,7 +214,7 @@ var vars = {
             p3: null,
             p4: null
         },
-        playerColours: [0xff4d4d,0x4dff4d,0x4d4dff,0xffff4d],
+        playerColours: [0xff4d4d,0x4dff4d,0x4d4dff,0xffff4d,0x0],
         playerNames: ['P1','P2','P3','P4'],
         getCurrentPlayer: ()=> {
             return vars.game.players[`p${vars.game.options.playerCurrent}`];
@@ -328,13 +324,30 @@ var vars = {
             }
         },
         out: (_gameObject)=> {
-            if (_gameObject.name.startsWith('dot_')) {
+            let name = _gameObject.name;
+            // BOARD OBJECTS
+            if (name.startsWith('dot_')) {
                 game.canvas.style.cursor='default';
+                return;
+            };
+
+            if (name.startsWith('nameDot_p')) {
+                vars.game.optionsScreen.showHoverText(false);
+                return;
             };
         },
         over: (_gameObject)=> {
-            if (_gameObject.name.startsWith('dot_')) {
+            let name = _gameObject.name;
+            // BOARD OBJECTS
+            if (name.startsWith('dot_')) {
                 game.canvas.style.cursor='crosshair';
+                return;
+            };
+
+            if (name.startsWith('nameDot_p')) {
+                let p = name.replace('nameDot_p','');
+                vars.game.optionsScreen.showHoverText(true, p, _gameObject.x);
+                return;
             };
         }
     },
@@ -426,6 +439,16 @@ var vars = {
             Phaser.Actions.GridAlign(group.getChildren(), { width: wRepeats, cellWidth: fW, cellHeight: fH, x: fW/2, y: fH/2 });
 
             return group;
+        },
+        generateTextShadow(_object, _offsets={x:8, y:8}) {
+            let text = _object.text;
+            let font = { ..._object.font };
+            font.color = '#000000';
+            let position = _object.getCenter();
+            let origin = { x: _object.originX, y: _object.originY };
+            // i need the font
+            let textShadow = scene.add.text(position.x+_offsets.x,position.y+_offsets.y,text,font).setOrigin(origin.x,origin.y).setAlpha(0.25);
+            return textShadow;
         },
 
         generateWinScreen() {

@@ -48,7 +48,7 @@ let OptionsScreen = class {
         this.container.add([a,b,c]);
     }
     initDots() {
-        let radius = this.dotRadius = 6;
+        let radius = this.dotRadius = 8;
         if (scene.textures.list['dotUnunsed']) return false;
         let graphics = scene.add.graphics();
     
@@ -103,8 +103,9 @@ let OptionsScreen = class {
         let thickness = 4;
         let lineColor = 0xffffff;
         let graphics = scene.add.graphics();
-        for (let p=0; p<this.playersMax; p++) {
+        for (let p=0; p<this.playersMax+1; p++) {
             let fillColor = vars.game.playerColours[p];
+            p===4 && (lineColor = 0x0);
             graphics.lineStyle(thickness, lineColor);
             graphics.fillStyle(fillColor);
 
@@ -116,7 +117,8 @@ let OptionsScreen = class {
             graphics.fillCircle(c.x, c.y, radius);
 
             let d = radius*2+thickness;
-            graphics.generateTexture(`p${p+1}_dot`,d,d);
+            let key = p<4 ? `p${p+1}_dot` : 'pDotShadow';
+            graphics.generateTexture(key,d,d);
             graphics.clear();
         };
         graphics.destroy();
@@ -125,20 +127,28 @@ let OptionsScreen = class {
         let buttonBG = scene.add.graphics();
 
         let width = 300; let height = 100;
-        let buttonBGColours = { line: { size: 1, colour: 0x666666}, fill: { colour: 0xCCCCCC } };
-        buttonBG.lineStyle(buttonBGColours.line.size,buttonBGColours.line.colour);
-        buttonBG.fillStyle(buttonBGColours.fill.colour);
-        buttonBG.fillRoundedRect(0,0, width, height, 20);
-        buttonBG.strokeRoundedRect(0,0, width, height, 20);
-
-        buttonBG.generateTexture('newGameButtonBG',width,height);
-        buttonBG.clear().destroy();
+        let buttonBGColours = { line: { size: 1, colour: 0x666666}, fill: { colour: 0x999999 } };
+        [0,1].forEach((_i)=>{
+            _i && (buttonBGColours = { line: { size: 1, colour: 0}, fill: { colour: 0 } });
+            buttonBG.lineStyle(buttonBGColours.line.size,buttonBGColours.line.colour);
+            buttonBG.fillStyle(buttonBGColours.fill.colour);
+            buttonBG.fillRoundedRect(0,0, width, height, 20);
+            buttonBG.strokeRoundedRect(0,0, width, height, 20);
+    
+            let key = !_i ? 'newGameButtonBG' : 'newGameButtonBGShadow';
+            buttonBG.generateTexture(key,width,height);
+            buttonBG.clear();
+        });
+        buttonBG.destroy()
     }
     initUI() {
         let cC = consts.canvas;
-        let font = { ...vars.fonts.default, ...{ fontSize: '64px' } };
-        let smallFont = { ...font, ...{ fontSize: '48px' } };
-        let versionFont = { ...font, ...{ fontSize: '24px' } };
+        let font = { ...vars.fonts.default, ...{ fontSize: '42px', strokeThickness: 4 } };
+        let headingFont = { ...vars.fonts.default, ...{ fontSize: '72px', strokeThickness: 6 } };
+        let optionsFont = { ...vars.fonts.default, ...{ fontSize: '64px', strokeThickness: 5 } };
+
+        let smallFont = { ...font, ...{ fontSize: '32px' } };
+        let versionFont = { ...smallFont, ...{ fontSize: '24px' } };
 
         let container = this.container = scene.add.container().setName('options');
         
@@ -150,17 +160,17 @@ let OptionsScreen = class {
                 let bottomRight = logo.getBottomRight();
                 let version = scene.add.text(bottomRight.x-300, bottomRight.y+20, `Version ${vars.version}`, versionFont).setOrigin(1,0).setAlpha(0);
                 container.add(version);
-                scene.tweens.add({
-                    targets: version, alpha: 0.8, x: bottomRight.x+20, duration: 3000, ease: 'Quad'
-                });
+                scene.tweens.add({ targets: version, alpha: 0.8, x: bottomRight.x+20, duration: 3000, ease: 'Quad' });
             }
         });
         container.add(logo);
 
         // PLAYERS
         y = cC.height*0.3;
-        let text = scene.add.text(cC.cX, y, 'PLAYERS', font).setOrigin(0.5);
-        container.add(text);
+        let text = scene.add.text(cC.cX, y, 'PLAYERS', headingFont).setOrigin(0.5);
+        text.font = headingFont;
+        let textShadow = vars.UI.generateTextShadow(text);
+        container.add([textShadow,text]);
 
         // left and right arrows
         y = cC.height*0.4;
@@ -176,6 +186,7 @@ let OptionsScreen = class {
                     options.playersTotal = clamp(options.playersTotal+1,this.playersMin,this.playersMax);
                 };
                 this.phaserObjects.playerCount.text = options.playersTotal;
+                this.phaserObjects.playerCountShadow.text = options.playersTotal;
                 this.players = options.playersTotal;
                 options.playerCurrent=1;
                 this.updatePlayers();
@@ -183,43 +194,53 @@ let OptionsScreen = class {
             });
         });
 
-        let playerCount = this.phaserObjects.playerCount = scene.add.text(cC.cX, y, options.playersTotal, font).setOrigin(0.5);
-        container.add(playerCount);
+        let playerCount = this.phaserObjects.playerCount = scene.add.text(cC.cX, y, options.playersTotal, optionsFont).setOrigin(0.5);
+        playerCount.font = optionsFont;
+        let playerCountShadow = this.phaserObjects.playerCountShadow = vars.UI.generateTextShadow(playerCount);
+        container.add([playerCountShadow,playerCount]);
 
         // add the 4 player buttons
         this.groups = {};
         y=cC.height*0.55;
+        let hoverText = this.phaserObjects.hoverText = scene.add.text(0,y-120,`Change player N'S name`,smallFont).setOrigin(0.5).setVisible(false);
+        this.container.add(hoverText);
         let xInc = 250;
         let startX = cC.cX-xInc*1.5;
         vars.game.playerNames.forEach((_n,_i)=> {
             let x = startX+_i*xInc;
-            let icon = scene.add.image(x,y,`p${_i+1}_dot`).setScale(1.5).setInteractive();
+            let pInt = _i+1;
+            let icon = scene.add.image(x,y,`p${_i+1}_dot`).setScale(1.5).setName(`nameDot_p${pInt}`).setInteractive();
+            let iconShadow = scene.add.image(x+16,y+16,'pDotShadow').setAlpha(0.2).setScale(1.5).setName('iS');
+            icon.player = pInt;
             let c = icon.getCenter();
-            icon.player = _i+1;
             icon.on('pointerup', ()=>{
                 let playerID = icon.player-1;
                 vars.game.nameEntry.show(true,playerID);
             });
-            let text = this.phaserObjects[`p${_i+1}_name`] = scene.add.text(c.x, c.y, _n, smallFont).setOrigin(0.5);
-            container.add([icon,text]);
+            let text = this.phaserObjects[`p${_i+1}_name`] = scene.add.text(c.x, c.y, _n, font).setOrigin(0.5);
+            container.add([iconShadow,icon,text]);
             let group = this.groups[`p${_i+1}`] = scene.add.group().setName(`p${_i+1}`);
-            group.addMultiple([icon,text]);
+            group.addMultiple([iconShadow,icon,text]);
         });
         this.updatePlayers();
 
 
         // BOARD SIZE
         y = cC.height*0.7;
-        let bStext = scene.add.text(cC.cX, y, 'BOARD SIZE', font).setOrigin(0.5);
-        container.add(bStext);
+        let bStext = scene.add.text(cC.cX, y, 'BOARD SIZE', headingFont).setOrigin(0.5);
+        bStext.font = headingFont;
+        let bStextShadow = vars.UI.generateTextShadow(bStext);
+        container.add([bStextShadow,bStext]);
 
         y = cC.height*0.8;
         let boxesW = options.difficultySettings[options.difficulty];
-        let cDiff = this.phaserObjects.currentDifficulty = scene.add.text(cC.cX, y, `${boxesW}x${boxesW} (${boxesW*boxesW} BOXES)`, font).setOrigin(0.5);
-        container.add(cDiff);
+        let cDiff = this.phaserObjects.currentDifficulty = scene.add.text(cC.cX, y, `${boxesW}x${boxesW} (${boxesW*boxesW} Boxes)`, optionsFont).setOrigin(0.5);
+        cDiff.font = optionsFont;
+        let cDiffShadow = this.phaserObjects.currentDifficultyShadow = vars.UI.generateTextShadow(cDiff);
+        container.add([cDiffShadow, cDiff]);
 
         // left and right arrows
-        [cC.width*0.35,cC.width*0.65].forEach((_xpos,_i)=> {
+        [cC.width*0.325,cC.width*0.675].forEach((_xpos,_i)=> {
             let arrow = scene.add.image(_xpos,y,'ui','arrowIcon').setInteractive();
             container.add(arrow);
             !_i && arrow.setAngle(180);
@@ -230,7 +251,8 @@ let OptionsScreen = class {
                     options.difficulty = clamp(options.difficulty+1,0,3);
                 };
                 let boxesW = options.difficultySettings[options.difficulty];
-                this.phaserObjects.currentDifficulty.text = `${boxesW}x${boxesW} (${boxesW*boxesW} BOXES)`;
+                this.phaserObjects.currentDifficulty.text = `${boxesW}x${boxesW} (${boxesW*boxesW} Boxes)`;
+                this.phaserObjects.currentDifficultyShadow.text = `${boxesW}x${boxesW} (${boxesW*boxesW} Boxes)`;
                 this.difficulty = options.difficulty;
                 vars.localStorage.saveOptions();
             });
@@ -240,12 +262,13 @@ let OptionsScreen = class {
         // start button
         y = cC.height*0.95;
         let startButton = scene.add.image(cC.cX,y, 'newGameButtonBG').setInteractive();
+        let startButtonShadow = scene.add.image(cC.cX+8,y+8, 'newGameButtonBGShadow').setAlpha(0.2);
         startButton.on('pointerup', ()=> {
             this.startGame();
         });
         let c = startButton.getCenter();
         let startText = scene.add.text(cC.cX,y, 'START', font).setOrigin(0.5);
-        container.add([startButton,startText]);
+        container.add([startButtonShadow,startButton,startText]);
 
         this.initDevBounce();
 
@@ -255,6 +278,13 @@ let OptionsScreen = class {
     show(_show=true) {
         this.container.setVisible(_show);
         scene.containers.bubble.show(_show);
+    }
+
+    showHoverText(_show=true,_p='',_x=0) {
+        let hT = this.phaserObjects.hoverText;
+        _show && (hT.text=`CHANGE PLAYER ${_p}'S NAME`);
+        hT.setVisible(_show);
+        hT.x=_x;
     }
 
     startGame() {
@@ -269,8 +299,8 @@ let OptionsScreen = class {
 
     updatePlayers() {
         for (let p=1; p<=this.playersMax; p++) {
-            let alpha = p<=this.players ? 1 : 0.25;
-            this.groups[`p${p}`].getChildren().forEach((_c)=>{ _c.alpha=alpha; });
+            let alpha = p<=this.players ? 1 : 0.1;
+            this.groups[`p${p}`].getChildren().forEach((_c)=>{ _c.name!=='iS' && _c.setAlpha(alpha); if (_c.name==='iS') { alpha!==1 ? _c.setVisible(false) : _c.setVisible(true); }; }); 
         };
     }
 };
