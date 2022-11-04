@@ -94,6 +94,7 @@ let NameEntry = class {
     }
 
     acceptName() {
+        vars.audio.playButtonClick();
         vars.game.playerNames[this.playerID] = this.name;
         vars.localStorage.saveOptions();
         // update the options screen
@@ -102,29 +103,22 @@ let NameEntry = class {
         this.show(false);
     }
     deleteLetter() {
+        vars.audio.playSound('deleteLetter');
         this.name = this.name.substring(0,this.name.length-1);
         this.phaserObjects[`letter_${this.name.length}`].text='';
     }
 
     click(_gameObject) {
         let letter = _gameObject.letter;
-
+        
         if (letter==='delete' || letter === 'enter') {
             switch (letter) {
-                case 'delete':
-                    this.deleteLetter();
-                    return;
-                break;
-
-                case 'enter':
-                    this.acceptName();
-                    return;
-                break;
+                case 'delete': this.deleteLetter(); return; break;
+                case 'enter': this.acceptName(); return; break;
             };
         };
-
-
-        console.log(`Adding letter ${letter}`);
+        
+        vars.audio.playSingleClick();
         this.name = this.name.substring(0,2); // this line limits entry to 3 chars (updating the last char if player clicks on other chars)
         this.name+=letter;
 
@@ -133,8 +127,8 @@ let NameEntry = class {
 
     positionContainer(_pos) {
         this.container.setPosition(_pos.x,_pos.y);
-        this.phaserObjects.bg.x-=_pos.x/2;
-        this.phaserObjects.bg.y-=_pos.y/2;
+        this.phaserObjects.bg.x-=_pos.x;
+        this.phaserObjects.bg.y-=_pos.y;
     }
 
     show(_show=true, _playerID=null) {

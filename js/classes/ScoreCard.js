@@ -12,7 +12,7 @@ let ScoreCard = class {
     }
     
     init() {
-        this.container = scene.add.container().setName('scoreCard');
+        this.container = scene.add.container().setName('scoreCard').setDepth(consts.depths.scoreCard);
         this.groups = {};
 
         let x = 100;
@@ -66,11 +66,16 @@ let ScoreCard = class {
 
     updateBoxesLeft(_squaresLeft, _init=false) {
         if (_init) {
-            scene.tweens.addCounter({
-                from: 0, to: _squaresLeft, useFrames: true, duration: 120,
-                onUpdate: (_v)=> {
-                    this.phaserObjects.squaresLeft.text = `SQUARES LEFT\n${_v.getValue()|0}`;
-                }
+            let sLO = this.phaserObjects.squaresLeft;
+            let endX = sLO.x;
+            sLO.alpha=0;
+            sLO.x-=1100;
+            // intro slide
+            scene.tweens.timeline({
+                tweens: [
+                    { targets: sLO, alpha: 1, duration: 750, onComplete: ()=> { scene.tweens.addCounter({ from: 0, to: _squaresLeft, useFrames: true, duration: 120, onUpdate: (_v)=> { this.phaserObjects.squaresLeft.text = `SQUARES LEFT\n${_v.getValue()|0}`; } }); } },
+                    { targets: sLO, x: endX, offset: 1750, duration: 1500, ease: 'Quad.easeInOut' }
+                ]        
             });
         } else {
             this.phaserObjects.squaresLeft.setText('SQUARES LEFT\n' + _squaresLeft);

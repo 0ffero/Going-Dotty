@@ -3,7 +3,7 @@ var vars = {
     DEBUG: false,
     name: 'Going Dotty',
 
-    version: 1.15,
+    version: 1.18,
 
     versionInfo: [
         { v: 0.99,
@@ -22,6 +22,9 @@ var vars = {
         },
         { v: '1.12->1.15',
             info: 'UI Overhaul',
+        },
+        { v: '1.16->1.18',
+            info: 'Animations added. Audio added.',
         }
     ],
 
@@ -59,7 +62,11 @@ var vars = {
     files: {
         audio: {
             load: function() {
-                //scene.load.audio('audiokey', 'audio/audiokey.ogg');
+                scene.load.audio('fillSquare', 'audio/fillSquare.ogg');
+                scene.load.audio('buttonClick', 'audio/buttonClick.ogg');
+                scene.load.audio('singleClick', 'audio/singleClick.ogg');
+                
+                scene.load.audio('deleteLetter', 'audio/deleteLetter.ogg');
             }
         },
 
@@ -187,9 +194,15 @@ var vars = {
             scene.sound.volume=0.4;
         },
 
-        playSound: (_key)=> {
-            vars.DEBUG ? console.log(`  >> audio > playSound`) : null;
+        playButtonClick: ()=> {
+            vars.audio.playSound('buttonClick');
+        },
 
+        playSingleClick: ()=> {
+            vars.audio.playSound('singleClick');
+        },
+
+        playSound: (_key)=> {
             scene.sound.play(_key);
         },
     },

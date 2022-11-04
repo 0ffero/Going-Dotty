@@ -7,7 +7,8 @@ const consts = {
 
     depths: {
         board: 10,
-        winScreen: 15,
+        scoreCard: 15,
+        winScreen: 20,
         options: 50,
         bubbles: 53,
         nameEntry: 55,

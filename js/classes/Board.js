@@ -49,7 +49,7 @@ let Board = class {
         this.groups.playerSquares = scene.add.group().setName('playerSquares');
 
         let border = 20;
-        let bg = this.bg = vars.UI.generateBackground('pixel15', this.positions.maxWidth+border*2, this.positions.maxHeight+border*2).setAlpha(0.8);
+        let bg = this.bg = vars.UI.generateBackground('pixel15', this.positions.maxWidth+border*2, this.positions.maxHeight+border*2).setAlpha(0.66);
         bg.x-=border;
         bg.y-=border;
         this.container.add(bg);
@@ -348,7 +348,7 @@ let Board = class {
         let pID = `p${vars.game.options.playerCurrent}`;
         let offset = this.dotsDelta/2;
         this.scorePopups = [];
-        this.boxPositions.forEach((_bp)=> {
+        this.boxPositions.forEach((_bp,_i)=> {
             let x = _bp.x+offset;
             let y = _bp.y+offset;
             let square = scene.add.image(x,y,`pixel${pID}`).setScale(this.dotsDelta/2).setAlpha(0.3);
@@ -367,6 +367,11 @@ let Board = class {
             scene.tweens.add({ targets: text, alpha: 1, scale: 1, duration: duration });
 
             this.scorePopup({x:x,y:y});
+
+            scene.tweens.addCounter({
+                from: 0, to: 1, duration: _i*500,
+                onComplete: ()=> { vars.audio.playSound('fillSquare'); }
+            });
         });
 
         this.boxPositions = [];

@@ -180,6 +180,13 @@ let OptionsScreen = class {
             container.add(arrow);
             !_i && arrow.setAngle(180);
             arrow.on('pointerup', ()=> {
+                vars.audio.playButtonClick();
+
+                if (arrow.tween) { arrow.tween.remove(); arrow.tween=null; arrow.scale=1; }
+                arrow.tween = scene.tweens.add({
+                    targets: arrow, scale: 0.9, useFrames: true, duration: 5, yoyo: true, onComplete: (_t,_o)=> { _o[0].tween = null }
+                });
+
                 if (!_i) {
                     options.playersTotal = clamp(options.playersTotal-1,this.playersMin,this.playersMax);
                 } else {
@@ -214,6 +221,7 @@ let OptionsScreen = class {
             icon.player = pInt;
             let c = icon.getCenter();
             icon.on('pointerup', ()=>{
+                vars.audio.playButtonClick();
                 let playerID = icon.player-1;
                 vars.game.nameEntry.show(true,playerID);
             });
@@ -245,6 +253,13 @@ let OptionsScreen = class {
             container.add(arrow);
             !_i && arrow.setAngle(180);
             arrow.on('pointerup', ()=> {
+                vars.audio.playButtonClick();
+
+                if (arrow.tween) { arrow.tween.remove(); arrow.tween=null; arrow.scale=1; }
+                arrow.tween = scene.tweens.add({
+                    targets: arrow, scale: 0.9, useFrames: true, duration: 5, yoyo: true, onComplete: (_t,_o)=> { _o[0].tween = null }
+                });
+
                 if (!_i) {
                     options.difficulty = clamp(options.difficulty-1,0,3);
                 } else {
@@ -264,10 +279,16 @@ let OptionsScreen = class {
         let startButton = scene.add.image(cC.cX,y, 'newGameButtonBG').setInteractive();
         let startButtonShadow = scene.add.image(cC.cX+8,y+8, 'newGameButtonBGShadow').setAlpha(0.2);
         startButton.on('pointerup', ()=> {
-            this.startGame();
+            vars.audio.playButtonClick();
+            scene.tweens.add({
+                targets: this.groups.startButton.getChildren(),
+                scale: 0.9, useFrames: true, duration: 5, yoyo: true, ease: 'Quad',
+                onComplete: ()=> { this.startGame(); }
+            });
         });
-        let c = startButton.getCenter();
         let startText = scene.add.text(cC.cX,y, 'START', font).setOrigin(0.5);
+        this.groups.startButton = scene.add.group().setName('startButton');
+        this.groups.startButton.addMultiple([startButtonShadow,startButton,startText]);
         container.add([startButtonShadow,startButton,startText]);
 
         this.initDevBounce();

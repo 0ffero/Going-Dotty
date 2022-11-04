@@ -50,8 +50,11 @@ let WinScreen = class {
         let continueButton = scene.add.image(cC.cX,cC.height*0.8, 'newGameButtonBG').setInteractive();
         let continueButtonShadow = scene.add.image(cC.cX+8,cC.height*0.8+8, 'newGameButtonBGShadow').setName('iS').setAlpha(0.2).setInteractive();
         continueButton.on('pointerup', ()=> {
-            // show the options screen
-            vars.game.winScreen.show(false)
+            vars.audio.playButtonClick();
+            scene.tweens.add({
+                targets: this.continueContainer.getAll(),
+                scale: 0.9, useFrames: true, duration: 5, yoyo: true, onComplete: ()=> { vars.game.winScreen.show(false); }
+            });
         });
         let continueText = scene.add.text(cC.cX,cC.height*0.8, 'CONTINUE', font).setOrigin(0.5);
         this.continueContainer.add([continueButtonShadow,continueButton,continueText]);
@@ -99,17 +102,12 @@ let WinScreen = class {
                     fullString+= pIDLen>1 ? ` DRAW FOR 1ST PLACE WITH ${_sS.score} POINTS.` : ` WINS WITH ${_sS.score} POINTS!`;
                 break;
 
-                case 1: // 2nd position
-                    _sS.endY = this.positionsY.secondPlace;
-                break;
-
-                case 2: // 3rd position
-                    _sS.endY = this.positionsY.thirdPlace;
-                break;
-
-                case 3: // 4th position
-                    _sS.endY = this.positionsY.fourthPlace;
-                break;
+                // 2nd position
+                case 1: _sS.endY = this.positionsY.secondPlace; break;
+                // 3rd position
+                case 2: _sS.endY = this.positionsY.thirdPlace; break;
+                // 4th position
+                case 3: _sS.endY = this.positionsY.fourthPlace; break;
             };
 
             if (winPosition>0) {
