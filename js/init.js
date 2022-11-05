@@ -23,6 +23,7 @@ var config = {
     scene: {
         preload: preload,
         create: create,
+        update: update,
         pack: {
             files: [
                 { type: 'image', key: 'loadingScreen', url: 'assets/images/loadingScreen.png' }

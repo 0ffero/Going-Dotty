@@ -3,7 +3,7 @@ var vars = {
     DEBUG: false,
     name: 'Going Dotty',
 
-    version: 1.18,
+    version: 1.2,
 
     versionInfo: [
         { v: 0.99,
@@ -25,6 +25,9 @@ var vars = {
         },
         { v: '1.16->1.18',
             info: 'Animations added. Audio added.',
+        },
+        { v: 1.2,
+            info: 'Added fireworks to the win screen',
         }
     ],
 
@@ -118,6 +121,7 @@ var vars = {
                 vars.files.images.init();
 
                 scene.load.atlas('ui', 'images/ui.png', 'images/ui.json');
+                scene.load.atlas('flares', 'images/flares.png', 'images/flares.json');
             }
         },
 

@@ -6,6 +6,8 @@ let WinScreen = class {
         this.playersDots = { p1: null, p2: null, p3: null, p4: null };
         this.positionsY = { start: h*0.9, text: h*0.3, win: h*0.2, secondPlace: h*0.4, thirdPlace: h*0.5, fourthPlace: h*0.6 };
         this.initUI();
+
+        this.fireworks = new FireworksDisplay();
     }
 
     initUI() {
@@ -197,6 +199,8 @@ let WinScreen = class {
 
         this.generateWinVars(); // this also updates the win string
         this.repositionDotsByPoints();
+
+        this.fireworks.show();
     }
 
     showContinueButton(_show=true) {
@@ -204,6 +208,7 @@ let WinScreen = class {
     }
 
     showOptionsScreen() {
+        this.fireworks && this.fireworks.show(false);
         vars.game.optionsScreen && vars.game.optionsScreen.show();
     }
 
