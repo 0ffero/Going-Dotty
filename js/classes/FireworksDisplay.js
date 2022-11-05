@@ -63,11 +63,13 @@ let FireworksDisplay = class {
         _em===null && (_em=getRandom(0,this.particleSets.length-1));
         this.emitters[_em].setPosition(_position.x, _position.y);
         !this.emitters[_em].active && (this.emitters[_em].active=true); this.emitters[_em].explode();
+        vars.audio.fireworkExplode();
     }
 
     newFirework() {
         let cC = consts.canvas;
         let initialSpeed = getRandom(20,32)/2;
+        // initial speed will be 10->16 in 0.5 inc's
 
         let x = getRandom(2,cC.width*2/10-2)*5;
         let y = cC.height+20;
@@ -79,6 +81,23 @@ let FireworksDisplay = class {
         firework.speed = initialSpeed;
         firework.gravity = this.gravity;
         firework.dead = false;
+        firework.tracerTimeout=5;
+        firework.tracerTimeoutMax=5;
+        firework.doTracer = ()=> {
+            firework.tracerTimeout--;
+
+            if (!firework.tracerTimeout) {
+                firework.tracerTimeout=firework.tracerTimeoutMax;
+                let tracer = scene.add.image(firework.x,firework.y,'flares','white').setScale(0.1);
+                tracer.tween = scene.tweens.add({
+                    targets: tracer,
+                    duration: 500, alpha: 0,
+                    onComplete: (_t,_o)=> { _o[0].destroy(); }
+                });
+            }
+        }
+
+        vars.audio.fireworkTakeOff();
         
         this.container.add(firework);
         this.fireworks.push(firework);
@@ -93,6 +112,7 @@ let FireworksDisplay = class {
     update() {
         let dead = [];
         this.fireworks.forEach((_f)=> {
+            _f.doTracer();
             _f.speed-=_f.gravity;
             _f.y-=_f.speed;
             if (_f.speed<=0) {

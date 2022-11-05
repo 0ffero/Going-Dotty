@@ -3,7 +3,7 @@ var vars = {
     DEBUG: false,
     name: 'Going Dotty',
 
-    version: 1.2,
+    version: 1.24,
 
     versionInfo: [
         { v: 0.99,
@@ -26,8 +26,8 @@ var vars = {
         { v: '1.16->1.18',
             info: 'Animations added. Audio added.',
         },
-        { v: 1.2,
-            info: 'Added fireworks to the win screen',
+        { v: '1.2->1.24',
+            info: 'Added fireworks (with tracers) to the win screen along with sound effects',
         }
     ],
 
@@ -70,6 +70,16 @@ var vars = {
                 scene.load.audio('singleClick', 'audio/singleClick.ogg');
                 
                 scene.load.audio('deleteLetter', 'audio/deleteLetter.ogg');
+                
+                ['fireworkExplode_1','fireworkExplode_2'].forEach((_fe)=> {
+                    vars.audio.available.fireworkExplode.push(_fe);
+                    scene.load.audio(_fe, `audio/${_fe}.ogg`);
+                });
+
+                ['fireworkTakeOff_1'].forEach((_fto)=> {
+                    vars.audio.available.fireworkTakeOff.push(_fto);
+                    scene.load.audio(_fto, `audio/${_fto}.ogg`);
+                });
             }
         },
 
@@ -190,12 +200,36 @@ var vars = {
     },
 
     audio: {
-        available: [],
+        available: {
+            fireworkTakeOff: [],
+            fireworkExplode: [],
+        },
+        detunes: [],
 
         init: ()=> {
             vars.DEBUG ? console.log(`FN: audio > init`) : null;
 
             scene.sound.volume=0.4;
+
+            for (let i=-1000; i<=1000; i+=200) {
+                vars.audio.detunes.push(i);
+            };
+        },
+
+        fireworkExplode: ()=> {
+            let aV = vars.audio;
+            let key = getRandom(aV.available.fireworkExplode);
+            let detunes = [ ...aV.detunes ];
+            detunes = detunes.splice(0,(detunes.length+1)/2|0);
+            let detune = getRandom(detunes);
+            scene.sound.play(key, { detune: detune });
+        },
+
+        fireworkTakeOff: ()=> {
+            let aV = vars.audio;
+            let key = getRandom(aV.available.fireworkTakeOff);
+            let detune = getRandom(aV.detunes);
+            scene.sound.play(key, { detune: detune });
         },
 
         playButtonClick: ()=> {
