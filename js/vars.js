@@ -3,7 +3,7 @@ var vars = {
     DEBUG: false,
     name: 'Going Dotty',
 
-    version: 1.25,
+    version: 1.3,
 
     versionInfo: [
         { v: 0.99,
@@ -28,6 +28,12 @@ var vars = {
         },
         { v: '1.2->1.25',
             info: 'Added (enhanced) fireworks (with tracers) to the win screen along with sound effects',
+        },
+        { v: '1.26->1.28',
+            info: 'Firework "mothers" can generate more fireworks',
+        },
+        { v: '1.29->1.3',
+            info: 'Added special fireworks (only one type just now)',
         }
     ],
 
@@ -257,6 +263,7 @@ var vars = {
 
     game: {
         board: null,
+        fireworkCount: 2,
         nameEntry: null,
         options: { difficulty: 1, difficultySettings: [5,10,15,20], playerCurrent: 1, playersTotal: 2, playersMin: 2, playersMax: 4 },
         players: {
