@@ -3,7 +3,7 @@ var vars = {
     DEBUG: false,
     name: 'Going Dotty',
 
-    version: 1.3,
+    version: 1.31,
 
     versionInfo: [
         { v: 0.99,
@@ -34,6 +34,9 @@ var vars = {
         },
         { v: '1.29->1.3',
             info: 'Added special fireworks (only one type just now)',
+        },
+        { v: 1.31,
+            info: 'Flower particle emitter added to fireworks'
         }
     ],
 

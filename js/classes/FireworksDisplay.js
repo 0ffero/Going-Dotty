@@ -16,6 +16,8 @@ let FireworksDisplay = class {
 
         this.gravity=0.1;
 
+        this.initFlower();
+
         this.init();
 
     }
@@ -27,6 +29,7 @@ let FireworksDisplay = class {
     }
 
     initEmitters() {
+        let particle = scene.add.particles('flares');
         this.particleSets.forEach((_frames)=> {
             let options = {
                 frame: _frames,
@@ -41,11 +44,38 @@ let FireworksDisplay = class {
                 gravityY: 100,
                 active: false
             };
-            let particle = scene.add.particles('flares');
             this.container.add(particle);
             let emitter = particle.createEmitter(options);
             this.emitters.push(emitter);
         });
+
+
+        let flower = this.flower;
+        let flowerEmitter = particle.createEmitter({
+            frame: { frames: [ 'green', 'blue','yellow','red','white' ], cycle: true },
+            x: 0, y: 0,
+            gravityY: -60,
+            scale: { start: 0.33, end: 0 },
+            blendMode: 'ADD',
+            active: false,
+            emitZone: { type: 'edge', source: flower, quantity: 120 }
+        });
+        
+        this.specialEmitters = { circleBurst: null, flower: flowerEmitter };
+
+    }
+
+    initFlower() {
+        let  k = 4;
+        this.flower = {
+            getPoints: function (quantity, stepRate) {
+                if (!stepRate) { stepRate = Phaser.Math.PI2 / quantity; };
+                var input = Phaser.Utils.Array.NumberArrayStep(0, Phaser.Math.PI2, stepRate);
+                var output = new Array(input.length);
+                for (let i = 0; i < input.length; i++) { var angle = input[i]; output[i] = new Phaser.Math.Vector2().setToPolar(angle, 200 * Math.cos(k * angle)); };
+                return output;
+            }
+        };
     }
 
     destroyFirework(_f) {
@@ -65,6 +95,14 @@ let FireworksDisplay = class {
         _em===null && (_em=getRandom(0,this.particleSets.length-1));
         this.emitters[_em].setPosition(_position.x, _position.y);
         !this.emitters[_em].active && (this.emitters[_em].active=true); this.emitters[_em].explode();
+        vars.audio.fireworkExplode();
+    }
+
+    fireFlowerEmitter(_position={x: 0, y: 0}) {
+        vars.DEBUG && console.log(`Firing Emitter`);
+        let eM = this.specialEmitters.flower.setPosition(_position.x, _position.y);
+        !eM.active && (eM.active=true);
+        eM.explode(120);
         vars.audio.fireworkExplode();
     }
 
@@ -174,25 +212,41 @@ let FireworksDisplay = class {
     specialFirework(_vars=null) {
         if (!_vars || !_vars.x || !_vars.y) return `Special fireworks need an x and y position!`;
 
-        let frame = getRandom(['red','white','green','yellow','blue'])
-        let stars = scene.add.group({ key: 'flares', frame: frame, repeat: 15 });
-        let circle = new Phaser.Geom.Circle(_vars.x, _vars.y, 32);
-        Phaser.Actions.PlaceOnCircle(stars.getChildren(), circle);
+        if (getRandom(0,1)) {
+            this.fireFlowerEmitter({x:_vars.x,y:_vars.y});
+            return;
+        };
 
-        scene.tweens.addCounter({
-            from:0,to:1, useFrames: true, duration: 2, onComplete: ()=> {
-                scene.tweens.add({ targets: stars.getChildren(), alpha: 0, duration: 1250 })
-                scene.tweens.add({
-                    targets: circle, radius: 200,
-                    ease: 'Quintic.easeInOut',
-                    duration: 1500,
-                    onUpdate: function() {
-                        Phaser.Actions.RotateAroundDistance(stars.getChildren(), { x: _vars.x, y: _vars.y }, 0.02, circle.radius);
-                    },
-                    onComplete: ()=> { stars.destroy(true,true);}
-                });
-            }
-        })
+        let blooms = getRandom([0,0,0,0,0,0,1,1,2]);
+        
+        let delay = 500;
+        for (let b=0; b<=blooms; b++) {
+            let mult = b%2 ? -1 : 1;
+            scene.tweens.addCounter({
+                from:0,to:1,duration: b*delay,
+                onComplete: ()=> {
+                    let frame = getRandom(['red','white','green','yellow','blue'])
+                    let stars = scene.add.group({ key: 'flares', frame: frame, repeat: 15 });
+                    let circle = new Phaser.Geom.Circle(_vars.x, _vars.y, 32);
+                    Phaser.Actions.PlaceOnCircle(stars.getChildren(), circle);
+
+                    scene.tweens.addCounter({
+                        from:0,to:1, useFrames: true, duration: 2, onComplete: ()=> {
+                            scene.tweens.add({ targets: stars.getChildren(), alpha: 0, duration: 1250 })
+                            scene.tweens.add({
+                                targets: circle, radius: 200,
+                                ease: 'Quintic.easeInOut',
+                                duration: 1500,
+                                onUpdate: function() {
+                                    Phaser.Actions.RotateAroundDistance(stars.getChildren(), { x: _vars.x, y: _vars.y }, 0.02*mult, circle.radius);
+                                },
+                                onComplete: ()=> { stars.destroy(true,true);}
+                            });
+                        }
+                    });
+                }
+            });
+        };
     }
 
     update() {
