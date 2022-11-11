@@ -35,9 +35,11 @@ var vars = {
         { v: '1.29->1.3',
             info: 'Added special fireworks (only one type just now)',
         },
+        { v: 1.31,
+            info: 'Flower particle emitter added to fireworks'
+        },
         { v: 1.4,
             info: 'Added Dots Letter Intro'
-
         }
     ],
 
