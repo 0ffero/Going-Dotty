@@ -3,10 +3,10 @@ let OptionsScreen = class {
         this.players = vars.game.options.playersTotal;
         this.playersMin = 2; // used to limit the players
         this.playersMax = 4; // same here
+        this.dotRadius = 8;
 
         this.phaserObjects = {};
 
-        this.initDots();
         this.initPlayerDots();
         this.initStartButton();
 
@@ -46,58 +46,6 @@ let OptionsScreen = class {
         c.tweenY = scene.tweens.add({ targets: c, delay: delay, y: eY, duration: long, ease: easeY });
 
         this.container.add([a,b,c]);
-    }
-    initDots() {
-        let radius = this.dotRadius = 8;
-        if (scene.textures.list['dotUnunsed']) return false;
-        let graphics = scene.add.graphics();
-    
-        let lineColor = 0x999999;
-        let fillColorEmpty = 0x000000;
-
-        let lineColorUsed = 0x333333;
-        let fillColorUsed = 0xcccccc;
-        
-        let lineColorConnectable = 0xffff00;
-        let fillColorConnectable = 0x000000;
-        let thickness = 4;
-    
-        graphics.lineStyle(thickness, lineColor);
-        graphics.fillStyle(fillColorEmpty);
-    
-        let c = new Phaser.Geom.Point(radius+thickness/2, radius+thickness/2);
-        
-        // empty dot
-        graphics.strokeCircle(c.x, c.y, radius);
-        graphics.fillCircle(c.x, c.y, radius);
-        
-        let d = radius*2+thickness;
-        graphics.generateTexture('dotUnused',d,d);
-        graphics.clear();
-    
-        
-        // filled dot
-        graphics.lineStyle(thickness, lineColorUsed);
-        graphics.fillStyle(fillColorUsed);
-    
-        graphics.strokeCircle(c.x, c.y, radius);
-        graphics.fillCircle(c.x, c.y, radius);
-    
-        graphics.generateTexture('dotUsed',d,d);
-        graphics.clear();
-    
-    
-        // conectable dot
-        graphics.lineStyle(thickness, lineColorConnectable);
-        graphics.fillStyle(fillColorConnectable);
-    
-        graphics.strokeCircle(c.x, c.y, radius);
-        graphics.fillCircle(c.x, c.y, radius);
-    
-        graphics.generateTexture('dotConnectable',d,d);
-        graphics.clear().destroy();
-
-        return true;
     }
     initPlayerDots() {
         let thickness = 4;
@@ -155,7 +103,7 @@ let OptionsScreen = class {
         let y =cC.height*0.15;
         let logo = scene.add.image(cC.cX,-100,'ui','gameLogo');
         scene.tweens.add({
-            targets: logo, y: y, delay: 1500, duration: 2000, ease: 'Bounce',
+            targets: logo, y: y, delay: 250, duration: 2000, ease: 'Bounce',
             onComplete: ()=> {
                 let bottomRight = logo.getBottomRight();
                 let version = scene.add.text(bottomRight.x-300, bottomRight.y+20, `Version ${vars.version}`, versionFont).setOrigin(1,0).setAlpha(0);

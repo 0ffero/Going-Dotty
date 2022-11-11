@@ -3,7 +3,7 @@ var vars = {
     DEBUG: false,
     name: 'Going Dotty',
 
-    version: 1.3,
+    version: 1.4,
 
     versionInfo: [
         { v: 0.99,
@@ -34,6 +34,10 @@ var vars = {
         },
         { v: '1.29->1.3',
             info: 'Added special fireworks (only one type just now)',
+        },
+        { v: 1.4,
+            info: 'Added Dots Letter Intro'
+
         }
     ],
 
@@ -46,6 +50,7 @@ var vars = {
             case 'PRELOAD': // PRELOADS
                 vars.files.loadAssets();
                 vars.localStorage.init();
+                vars.graphics.init();
                 break;
             case 'CREATE': // CREATES
                 vars.anims.init();
@@ -155,6 +160,65 @@ var vars = {
             let depths = consts.depths;
             !scene.containers ? scene.containers = {} : null;
             //scene.containers.game = scene.add.container().setName('game').setDepth(depths.gameMap);
+        }
+    },
+
+    graphics: {
+        init: ()=> {
+            vars.graphics.initDots();
+        },
+
+        initDots() {
+            let radius = 8;
+            if (scene.textures.list['dotUnunsed']) return false;
+            let graphics = scene.add.graphics();
+        
+            let lineColor = 0x999999;
+            let fillColorEmpty = 0x000000;
+    
+            let lineColorUsed = 0x333333;
+            let fillColorUsed = 0xcccccc;
+            
+            let lineColorConnectable = 0xffff00;
+            let fillColorConnectable = 0x000000;
+            let thickness = 4;
+        
+            graphics.lineStyle(thickness, lineColor);
+            graphics.fillStyle(fillColorEmpty);
+        
+            let c = new Phaser.Geom.Point(radius+thickness/2, radius+thickness/2);
+            
+            // empty dot
+            graphics.strokeCircle(c.x, c.y, radius);
+            graphics.fillCircle(c.x, c.y, radius);
+            
+            let d = radius*2+thickness;
+            graphics.generateTexture('dotUnused',d,d);
+            graphics.clear();
+        
+            
+            // filled dot
+            graphics.lineStyle(thickness, lineColorUsed);
+            graphics.fillStyle(fillColorUsed);
+        
+            graphics.strokeCircle(c.x, c.y, radius);
+            graphics.fillCircle(c.x, c.y, radius);
+        
+            graphics.generateTexture('dotUsed',d,d);
+            graphics.clear();
+        
+        
+            // conectable dot
+            graphics.lineStyle(thickness, lineColorConnectable);
+            graphics.fillStyle(fillColorConnectable);
+        
+            graphics.strokeCircle(c.x, c.y, radius);
+            graphics.fillCircle(c.x, c.y, radius);
+        
+            graphics.generateTexture('dotConnectable',d,d);
+            graphics.clear().destroy();
+    
+            return true;
         }
     },
 
@@ -455,18 +519,45 @@ var vars = {
     },
 
     UI: {
+        introText: ['GOING DOTTY','BY OFFERO -04-'],
+        introTextDirections: null,
         repeats: ['repeat_1','repeat_2','repeat_3'],
 
         init: ()=> {
             vars.DEBUG ? console.log(`FN: ui > init`) : null;
 
+            let introTextDirections = ['left','right','top','bottom'];
+            vars.UI.introTextDirections = shuffle(introTextDirections);
+
+            let dS = vars.game.dotString = new DotString();
+            dS.setDotTexture('dotConnectable');
+            vars.UI.doIntro();
+
+        },
+        continue: ()=> {
             vars.UI.generateRepeatingBackground();
 
             vars.game.nameEntry = new NameEntry();
             vars.game.optionsScreen = new OptionsScreen();
 
             scene.tweens.addCounter({ from:0, to:1, useFrames: true, duration: 10, onComplete: ()=> { vars.UI.generateWinScreen(); }});
+        },
 
+        doIntro: ()=> {
+            let UI = vars.UI;
+            let lG = vars.game.dotString;
+            if (!UI.introText.length) { lG.destroy(); delete(vars.game.dotString); vars.UI.continue(); return; };
+
+            let text = UI.introText.shift();
+            if (text.includes('OFFERO')) {
+                let zeroPos = getRandom([0,5]);
+                text = !zeroPos ? text.replace('OFFERO','0FFERO') : text.replace('OFFERO','OFFER0');
+            };
+            lG.show();
+            let direction = UI.introTextDirections.shift();
+            UI.introTextDirections.push(direction);
+            lG.setMoveFrom(direction);
+            lG.generateString(text);
         },
 
         generateBackground: (_colour,_w=null, _h=null)=> {

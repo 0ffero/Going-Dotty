@@ -49,7 +49,7 @@ function preload() {
     scene.add.image(cC.cX, cC.cY,'loadingScreen').setName('loadingScreen').setDepth(consts.depths.loadingScreen);
 
     vars.init('PRELOAD');
-}
+};
 
 
 
@@ -64,14 +64,5 @@ function create() {
     vars.init('CREATE'); // build the phaser objects, scenes etc
     vars.init('STARTAPP'); // start the app
 
-    let loadingScreen = scene.children.getByName('loadingScreen');
-    scene.tweens.add({
-        targets: loadingScreen,
-        alpha: 0,
-        delay: 1000,
-        duration: 500,
-        onComplete: (_t,_o)=> {
-            _o[0].destroy();
-        }
-    })
-}
+    let loadingScreen = scene.children.getByName('loadingScreen').destroy();
+};
